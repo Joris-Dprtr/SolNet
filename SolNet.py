@@ -17,4 +17,9 @@ class SolNet:
         
         print('Data gathered\n')
         
+        print('Transforming data: Removing unused variables, scaling, featurisation \n')
+        
+        source_data = source_data[0]
+        
+        
         return source_data
