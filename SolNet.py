@@ -44,7 +44,7 @@ class SolNet:
               
             
         #Create a TimeSeries object of the target variable
-        covariate_series = TimeSeries.from_series(source_data[['Gb(i)','Gd(i)','Gr(i)','H_sun', 'T2m']])
+        covariate_series = TimeSeries.from_series(source_data[['poa_direct','poa_sky_diffuse','poa_ground_diffuse','solar_elevation', 'temp_air']])
         
         hour_series = datetime_attribute_timeseries(
             pd.date_range(start=covariate_series.start_time(), freq=covariate_series.freq_str, periods=len(source_data)),
@@ -79,20 +79,18 @@ class SolNet:
             n_rnn_layers=4,
             dropout=0.4,
             batch_size=32,
-            n_epochs=100,
+            n_epochs=5,
             optimizer_kwargs={"lr": 1e-4},
             model_name= modelname,
             random_state=28,
             save_checkpoints=True,
             force_reset=True,
             pl_trainer_kwargs={
-                "accelerator": "gpu",
-                "gpus": [0],
                 "callbacks": [my_stopper]
             }
         )
     
-        print('Training model\n')
+        print('Training model (this can take a while)\n')
     
         my_model.fit(
             train,
