@@ -15,13 +15,14 @@ class SolNet:
     This class includes the model generation based on a destination provided by the user.
     """
     
-    def sourceModel(latitude, longitude, modelname):
+    def sourceModel(latitude, longitude, modelname, peakPower = 2.5):
         
         print('Fetching Source Model data\n')
         
         source_data = pvlib_helpers.get_pvgis_hourly(latitude=latitude, 
                                                      longitude=longitude,
                                                      pvcalculation=True,
+                                                     peakpower=peakPower,
                                                      optimal_surface_tilt=True, 
                                                      optimalangles=True)
         
