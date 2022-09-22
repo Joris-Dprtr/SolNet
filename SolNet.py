@@ -10,12 +10,19 @@ from darts.dataprocessing.transformers import Scaler
 
 from pytorch_lightning.callbacks import EarlyStopping
 
-class SolNet:
-    """
-    This class includes the model generation based on a destination provided by the user.
-    """
-    
-    def sourceModel(latitude, longitude, modelname, gpu_available = False, peakPower = 2.5):
+class SolNet():
+    def __init__(
+        self,
+        latitude, 
+        longitude, 
+        modelname, 
+        gpu_available = False, 
+        peakPower = 2.5
+        ):
+        
+        """
+        This class includes the model generation based on a destination provided by the user.
+        """
         
         print('Fetching Source Model data\n')
         
@@ -90,7 +97,7 @@ class SolNet:
             n_rnn_layers=4,
             dropout=0.4,
             batch_size=32,
-            n_epochs=5,
+            n_epochs=1,
             optimizer_kwargs={"lr": 1e-4},
             model_name= modelname,
             random_state=28,
@@ -112,4 +119,3 @@ class SolNet:
         my_model = BlockRNNModel.load_from_checkpoint(modelname, best=True)
     
         return my_model
-        
