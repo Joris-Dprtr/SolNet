@@ -15,7 +15,7 @@ class SolNet:
     This class includes the model generation based on a destination provided by the user.
     """
     
-    def sourceModel(latitude, longitude, modelname, peakPower = 2.5):
+    def sourceModel(latitude, longitude, modelname, gpu_available = False, peakPower = 2.5):
         
         print('Fetching Source Model data\n')
         
@@ -70,6 +70,17 @@ class SolNet:
             min_delta=0.00001,
             mode='min',
         )
+        
+        if gpu_available == False:
+            trainer_kwargs = {
+                "callbacks": [my_stopper]
+            }
+        else:
+            trainer_kwargs={
+                "accelerator": "gpu",
+                "gpus": [0],
+                "callbacks": [my_stopper]
+            }
     
         my_model = BlockRNNModel(
             input_chunk_length=24,
@@ -85,9 +96,7 @@ class SolNet:
             random_state=28,
             save_checkpoints=True,
             force_reset=True,
-            pl_trainer_kwargs={
-                "callbacks": [my_stopper]
-            }
+            pl_trainer_kwargs=trainer_kwargs
         )
     
         print('Training model (this can take a while)\n')

@@ -7,12 +7,14 @@ Base model:
 1. User provides latitude and longitude
 2. Source model gets returned
 
+Updates:
+1. Allow for GPU use
+
 ## Pipeline
 
 ### Short term
-1. Visualise training progress
-2. Make model based on diverse locations
-3. Allow user to specify features
+1. Make model based on diverse locations
+2. Allow user to specify features
 
 ### Long term
 1. Finetuning functions
