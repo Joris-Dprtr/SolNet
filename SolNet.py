@@ -16,8 +16,8 @@ class SolNet():
         latitude, 
         longitude, 
         modelname, 
-        gpu_available = False, 
-        peakPower = 2.5
+        peakPower = 2.5,
+        gpu_available = False
         ):
         
         """
