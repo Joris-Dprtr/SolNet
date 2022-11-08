@@ -93,7 +93,7 @@ class SolNet():
             input_chunk_length=24,
             output_chunk_length=24,
             model="LSTM",
-            hidden_size=300,
+            hidden_dim=300,
             n_rnn_layers=4,
             dropout=0.4,
             batch_size=32,
