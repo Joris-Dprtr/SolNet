@@ -16,7 +16,7 @@ class SolNet():
         latitude, 
         longitude, 
         modelname, 
-        peakPower = 2.5,
+        peakPower,
         gpu_available = False
         ):
         
@@ -26,6 +26,10 @@ class SolNet():
         
         print('Fetching Source Model data\n')
         
+        """
+        Use the data gathering class
+        """
+
         source_data = pvlib_helpers.get_pvgis_hourly(latitude=latitude, 
                                                      longitude=longitude,
                                                      pvcalculation=True,
