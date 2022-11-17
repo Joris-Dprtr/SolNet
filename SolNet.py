@@ -7,6 +7,7 @@ from darts import TimeSeries
 from darts.models import BlockRNNModel
 from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.dataprocessing.transformers import Scaler
+from DataGathering import Data
 
 from pytorch_lightning.callbacks import EarlyStopping
 
@@ -26,22 +27,13 @@ class SolNet():
         
         print('Fetching Source Model data\n')
         
-        """
-        Use the data gathering class
-        """
+        source_data = Data.dataGathering(latitude, longitude, peakPower)
 
-        source_data = pvlib_helpers.get_pvgis_hourly(latitude=latitude, 
-                                                     longitude=longitude,
-                                                     pvcalculation=True,
-                                                     peakpower=peakPower,
-                                                     optimal_surface_tilt=True, 
-                                                     optimalangles=True)
-        
         print('Data gathered\n')
         
         print('Transforming data: Removing unused variables, scaling, featurisation \n')
         
-        source_data = source_data[0].astype(np.float32)
+        source_data = source_data[0][0].astype(np.float32)
         
         #Create a TimeSeries object of the target variable
         target_series = TimeSeries.from_series(source_data['P'])
