@@ -6,7 +6,8 @@ from DataTransforming import RawData
 from pytorch_lightning.callbacks import EarlyStopping
 
 class SolNet():
-    def __init__(
+        
+    def model(
         self,
         latitude, 
         longitude, 
@@ -14,7 +15,7 @@ class SolNet():
         peakPower,
         gpu_available = False
         ):
-        
+    
         print('Fetching Source Model data\n')
         
         source_data = Source.dataGathering(latitude, longitude, peakPower)
