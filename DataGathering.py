@@ -11,18 +11,16 @@ import pvlib_helpers
 class SourceData():
 
     #Class attributes
-    locations = 5           #Number of neighbouring locations to include in the model
-    start_date = 2018       #Starting date (incldued for testing purposes with limited data)
     km_radius = 50          #The radius around the actual location to find additional locations
     gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
     precision = 40          #The closeness to trailing the coastline when locations are close to water
 
-    def dataGathering(latitude, longitude, peakPower):
+    def dataGathering(latitude, longitude, peakPower, locations, start_date = 2005):
         
         data = []
         
         # Make a dataframe for the locations
-        lin_loc = np.linspace(0,SourceData.locations,SourceData.locations)
+        lin_loc = np.linspace(0,locations,locations)
         lin_loc_df = pd.DataFrame({"Locations":lin_loc})
 
         # Make a sin and cosin pattern based on the number of locations
@@ -36,7 +34,7 @@ class SourceData():
         try:
             data.append(pvlib_helpers.get_pvgis_hourly(latitude=latitude,
                                           longitude=longitude, 
-                                          start = SourceData.start_date,
+                                          start = start_date,
                                           pvcalculation = True,
                                           peakpower=peakPower,
                                           optimal_surface_tilt=True, 
@@ -54,7 +52,7 @@ class SourceData():
 
         # Additional locations
 
-        for i in range(SourceData.locations - 1):
+        for i in range(locations - 1):
             
             print('Additional location ' + str(i+1) + '...\n')
             
@@ -90,7 +88,7 @@ class SourceData():
                     lat_new = lat_list[-(i+1)]
                     data.append(pvlib_helpers.get_pvgis_hourly(latitude=lat_new,
                                                 longitude=long_new, 
-                                                start = SourceData.start_date,
+                                                start = start_date,
                                                 pvcalculation = True,
                                                 peakpower=peakPower,
                                                 optimal_surface_tilt=True, 

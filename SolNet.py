@@ -12,12 +12,14 @@ class SolNet():
         longitude, 
         modelname, 
         peakPower,
+        locations,
+        start_date = 2005,
         gpu_available = False
         ):
     
         print('Fetching Source Model data\n')
         
-        source_data = Source.dataGathering(latitude, longitude, peakPower)
+        source_data = Source.dataGathering(latitude, longitude, peakPower, locations, start_date = start_date)
 
         print('Data gathered\n')
         
