@@ -8,7 +8,6 @@ from pytorch_lightning.callbacks import EarlyStopping
 class SolNet():
         
     def model(
-        self,
         latitude, 
         longitude, 
         modelname, 
