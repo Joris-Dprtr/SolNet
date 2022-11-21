@@ -7,24 +7,18 @@ from darts.dataprocessing.transformers import Scaler
 
 class RawData():
     
-    def __init__(
-        self,
-        dataList):
-        
-        self.dataList = dataList
-        
-    def dataTransforming(self):
+    def dataTransforming(dataList):
         
         trainList = []
         covTrainList = []
         testList = []
         covTestList = []
-        
+              
         TRAINTESTSPLIT = 0.85
         
-        for i in range(len(self.dataList)):
+        for i in range(len(dataList)):
             
-            source_data = self.dataList[i][0].astype(np.float32)
+            source_data = dataList[i][0].astype(np.float32)
         
             #Create a TimeSeries object of the target variable
             target_series = TimeSeries.from_series(source_data['P'])
