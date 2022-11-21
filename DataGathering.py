@@ -12,7 +12,7 @@ class SourceData():
 
     #Class attributes
     locations = 5           #Number of neighbouring locations to include in the model
-    start_date = 2014       #Starting date (incldued for testing purposes with limited data)
+    start_date = 2018       #Starting date (incldued for testing purposes with limited data)
     km_radius = 50          #The radius around the actual location to find additional locations
     gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
     precision = 40          #The closeness to trailing the coastline when locations are close to water
