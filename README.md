@@ -9,16 +9,12 @@ Base model:
 
 Updates:
 1. Allow for GPU use
+2. Additional locations close to source location can be added to further increase the amount of data included
 
 ## Pipeline
 
 ### Short term
-1. Make model based on diverse locations
-   - How do we chose locations?
-   - Allow user to specify how many locations? 
-   - Decrease date range with increased locations? Logarithmic increase in data with more locations? 
-     Or allow user to specify date range?
-2. Allow user to specify features
+1. Allow user to specify features
 
 ### Long term
 1. Finetuning functions
