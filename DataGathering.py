@@ -90,6 +90,9 @@ class SourceData():
                     lat_new = lat_list[-(i+1)]
                     data.append(pvlib_helpers.get_pvgis_hourly(latitude=lat_new,
                                                 longitude=long_new, 
+                                                start = SourceData.start_date,
+                                                pvcalculation = True,
+                                                peakpower=peakPower,
                                                 optimal_surface_tilt=True, 
                                                 optimalangles=True))
                         
