@@ -7,7 +7,7 @@ from darts import TimeSeries
 from darts.models import BlockRNNModel
 from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.dataprocessing.transformers import Scaler
-from DataGathering import Data
+from DataGathering import SourceData as Source
 
 from pytorch_lightning.callbacks import EarlyStopping
 
@@ -27,7 +27,7 @@ class SolNet():
         
         print('Fetching Source Model data\n')
         
-        source_data = Data.dataGathering(latitude, longitude, peakPower)
+        source_data = Source.dataGathering(latitude, longitude, peakPower)
 
         print('Data gathered\n')
         

@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 
 import pvlib_helpers
 
-class Data():
+class SourceData():
 
     #Class attributes
     locations = 5          #Number of neighbouring locations to include in the model
