@@ -31,6 +31,8 @@ class SourceData():
 
         # Base location
 
+        print('Gathering data from base location...')
+        
         try:
             data.append(pvlib_helpers.get_pvgis_hourly(latitude=latitude,
                                           longitude=longitude, 
@@ -54,7 +56,7 @@ class SourceData():
 
         for i in range(locations - 1):
             
-            print('Additional location ' + str(i+1) + '...\n')
+            print('Gathering data from additional location ' + str(i+1) + '...\n')
             
             # The distance from the base location, transforming latitude and longitude to kilometers
             lat_dif = (1/110.574) * SourceData.km_radius
