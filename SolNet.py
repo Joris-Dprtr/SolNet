@@ -22,7 +22,7 @@ class SolNet():
         return source_data
 
 
-    def datamodelprep(
+    def dataprep(
         source_data
         ):
 
