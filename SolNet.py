@@ -35,16 +35,16 @@ class SolNet():
         return trainList, covTrainList, testList, covTestList
     
     
-    
     def model(
         trainList, 
         covTrainList, 
         testList, 
         covTestList,
-        modelname, 
+        modelname,      
+        input_length = 24,
+        output_length = 24,
         gpu_available = False
         ):
-
                 
         print('Creating model \n')
         
@@ -67,14 +67,14 @@ class SolNet():
             }
     
         my_model = BlockRNNModel(
-            input_chunk_length=24,
-            output_chunk_length=24,
+            input_chunk_length=input_length,
+            output_chunk_length=output_length,
             model="LSTM",
             hidden_dim=300,
             n_rnn_layers=4,
             dropout=0.4,
             batch_size=32,
-            n_epochs=1,
+            n_epochs=100,
             optimizer_kwargs={"lr": 1e-4},
             model_name= modelname,
             random_state=28,
