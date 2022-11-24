@@ -7,25 +7,44 @@ from pytorch_lightning.callbacks import EarlyStopping
 
 class SolNet():
         
-    def model(
+    def data(
         latitude, 
         longitude, 
-        modelname, 
         peakPower,
         locations,
-        start_date = 2005,
-        gpu_available = False
+        start_date = 2005        
         ):
     
         print('Fetching Source Model data\n')
         
         source_data = Source.dataGathering(latitude, longitude, peakPower, locations, start_date = start_date)
 
+        return source_data
+
+
+    def datamodelprep(
+        source_data
+        ):
+
         print('Data gathered\n')
         
         print('Transforming data: Removing unused variables, scaling, featurisation \n')
         
-        trainList, covTrainList, testList, covTestList = RawData.dataTransforming(source_data)
+        trainList, covTrainList, testList, covTestList = RawData.dataTransforming(source_data)        
+        
+        return trainList, covTrainList, testList, covTestList
+    
+    
+    
+    def model(
+        trainList, 
+        covTrainList, 
+        testList, 
+        covTestList,
+        modelname, 
+        gpu_available = False
+        ):
+
                 
         print('Creating model \n')
         
