@@ -1,6 +1,11 @@
 # SolNet
 Open-source tool to get a pre-trained deep learning model for solar forecasting purposes.
 
+## Requirements
+
+### Libraries
+TBD
+
 ## Done
 
 Base model:
