@@ -1,41 +1,35 @@
-# Do we need to reference PVLIB somehow when we use this? Or make our own version of the API connection?
-from darts.models import BlockRNNModel
-import numpy as np
+import math
 import pandas as pd
+import numpy as np
+
+import pvlib_helpers
 
 from darts import TimeSeries
 from darts.utils.timeseries_generation import datetime_attribute_timeseries
 from darts.dataprocessing.transformers import Scaler
+from darts.models import BlockRNNModel
+
 from pytorch_lightning.callbacks import EarlyStopping
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import math
-import numpy as np
+class SolNet:
 
-
-import pvlib_helpers
-
-class SolNet():
-
-            
-    """
-    Overhaul of the product is happening:
-    - Everything will be centered in one class
-    - Solnet will be initialized with a latitude and longitude as args and the rest will be kwargs
-    - The initialisation will bring forth a data series
-    - Everything else will be done with methods:
-        - Data prep
-        - Model creation
-        - Model evaluation (This should work both out of the box on the source locations AND on the target location if the user calls it)    
-    """
-    
-    #Class attributes
-    km_radius = 50          #The radius around the actual location to find additional locations
-    gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
-    precision = 40          #The closeness to trailing the coastline when locations are close to water
+    def __init__(
+        self,
+        latitude,
+        longitude,
+        peakPower,
+        locations = 5,
+        start_date = 2005):
+        
+        
+        self.dataGathering(latitude, longitude, peakPower, locations, start_date)
+        
 
     def dataGathering(latitude, longitude, peakPower, locations, start_date = 2005):
+        
+        km_radius = 50          #The radius around the actual location to find additional locations
+        gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
+        precision = 40          #The closeness to trailing the coastline when locations are close to water
         
         data = []
         
@@ -79,16 +73,16 @@ class SolNet():
             print('Gathering data from additional location ' + str(i+1) + '...\n')
             
             # The distance from the base location, transforming latitude and longitude to kilometers
-            lat_dif = (1/110.574) * SourceData.km_radius
+            lat_dif = (1/110.574) * km_radius
             lat = latitude + lin_loc_df['sin_loc'][i]*lat_dif
             
             # Longitude is based on the actual latitude 
-            long_dif = 1/(111.32*abs(math.cos(math.radians(lat)))) * SourceData.km_radius
+            long_dif = 1/(111.32*abs(math.cos(math.radians(lat)))) * km_radius
             long = longitude + lin_loc_df['cos_loc'][i]*long_dif
             
             # Gaussian randomisation
-            lat_dif_gaus = (1/110.574) * SourceData.gaus_radius
-            long_dif_gaus = 1/(111.32*abs(math.cos(math.radians(lat)))) * SourceData.gaus_radius
+            lat_dif_gaus = (1/110.574) * gaus_radius
+            long_dif_gaus = 1/(111.32*abs(math.cos(math.radians(lat)))) * gaus_radius
             
             mean = [long, lat]
             cov = [[long_dif_gaus,0],
@@ -101,10 +95,10 @@ class SolNet():
             # Check if location is on land 
             ## If yes: append to the list
             
-            long_list = np.linspace(longitude, long, SourceData.precision)
-            lat_list = np.linspace(latitude, lat, SourceData.precision)
+            long_list = np.linspace(longitude, long, precision)
+            lat_list = np.linspace(latitude, lat, precision)
                 
-            for i in range(0,(SourceData.precision-1)):
+            for i in range(0,(precision-1)):
                 try: 
                     long_new = long_list[-(i+1)]
                     lat_new = lat_list[-(i+1)]
