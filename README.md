@@ -20,6 +20,7 @@ Updates:
 
 ### Short term
 1. Allow user to specify features
+2. Forecast evaluation
 
 ### Long term
 1. Finetuning functions

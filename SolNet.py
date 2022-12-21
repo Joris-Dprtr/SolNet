@@ -22,10 +22,10 @@ class SolNet:
         start_date = 2005):
         
         
-        self.dataGathering(latitude, longitude, peakPower, locations, start_date)
+        self._dataGathering(latitude, longitude, peakPower, locations, start_date)
         
 
-    def dataGathering(latitude, longitude, peakPower, locations, start_date = 2005):
+    def _dataGathering(latitude, longitude, peakPower, locations, start_date):
         
         km_radius = 50          #The radius around the actual location to find additional locations
         gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
@@ -124,6 +124,7 @@ class SolNet:
         
         return data
     
+    
     def dataTransforming(
         dataList,
         covariates = ['poa_direct','poa_sky_diffuse','poa_ground_diffuse','solar_elevation', 'temp_air']):
@@ -158,7 +159,6 @@ class SolNet:
                 ).astype(np.float32)
 
             covariate_series = covariate_series.stack(hour_series)
-
 
             # Create training and validation sets of the target variable
             cov_train, cov_test = covariate_series.split_after(TRAINTESTSPLIT)
