@@ -7,7 +7,9 @@ from darts.dataprocessing.transformers import Scaler
 
 class RawData():
     
-    def dataTransforming(dataList):
+    def dataTransforming(
+        dataList,
+        covariates = ['poa_direct','poa_sky_diffuse','poa_ground_diffuse','solar_elevation', 'temp_air']):
         
         trainList = []
         covTrainList = []
@@ -30,7 +32,7 @@ class RawData():
             test = transformer.transform(test)     
 
             #Create a TimeSeries object of the target variable
-            covariate_series = TimeSeries.from_series(source_data[['poa_direct','poa_sky_diffuse','poa_ground_diffuse','solar_elevation', 'temp_air']])
+            covariate_series = TimeSeries.from_series(source_data[covariates])
 
             hour_series = datetime_attribute_timeseries(
                 pd.date_range(start=covariate_series.start_time(), freq=covariate_series.freq_str, periods=len(source_data)),

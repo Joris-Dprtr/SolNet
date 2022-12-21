@@ -12,7 +12,6 @@ class SolNet():
         longitude, 
         peakPower,
         locations,
-        start_date = 2005        
         ):
     
         print('Fetching Source Model data\n')
