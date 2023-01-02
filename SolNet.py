@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 import numpy as np
+import formulas as fm
 
 import pvlib_helpers
 
@@ -20,28 +21,19 @@ class SolNet:
         peakPower,
         locations = 5,
         start_date = 2005):
-        
-        
-        self._dataGathering(latitude, longitude, peakPower, locations, start_date)
-        
 
-    def _dataGathering(latitude, longitude, peakPower, locations, start_date):
+        self.data = self._dataGathering(latitude, longitude, peakPower, locations=locations, start_date=start_date)
+        
+    def _dataGathering(self, latitude, longitude, peakPower, locations=5, start_date=2005):
         
         km_radius = 50          #The radius around the actual location to find additional locations
         gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
         precision = 40          #The closeness to trailing the coastline when locations are close to water
+                                    #The higher the number, the closer the location to the coast
         
         data = []
-        
-        # Make a dataframe for the locations
-        lin_loc = np.linspace(0,locations,locations)
-        lin_loc_df = pd.DataFrame({"Locations":lin_loc})
 
-        # Make a sin and cosin pattern based on the number of locations
-        lin_loc_df["loc_norm"] = 2 * math.pi * lin_loc_df["Locations"] / lin_loc_df["Locations"].max()
-
-        lin_loc_df["sin_loc"] = np.sin(lin_loc_df["loc_norm"])
-        lin_loc_df["cos_loc"] = np.cos(lin_loc_df["loc_norm"])
+        additional_locations = fm.circle_pattern(locations-1)
 
         # Base location
 
@@ -73,30 +65,30 @@ class SolNet:
             print('Gathering data from additional location ' + str(i+1) + '...\n')
             
             # The distance from the base location, transforming latitude and longitude to kilometers
-            lat_dif = (1/110.574) * km_radius
-            lat = latitude + lin_loc_df['sin_loc'][i]*lat_dif
+            lat_dif = fm.kmToLat(km_radius)
+            lat_additional_loc = latitude + additional_locations['Sine'][i]*lat_dif
             
             # Longitude is based on the actual latitude 
-            long_dif = 1/(111.32*abs(math.cos(math.radians(lat)))) * km_radius
-            long = longitude + lin_loc_df['cos_loc'][i]*long_dif
+            long_dif = fm.kmToLong(km_radius, lat_additional_loc)
+            long_additional_loc = longitude + additional_locations['Cosine'][i]*long_dif
             
             # Gaussian randomisation
-            lat_dif_gaus = (1/110.574) * gaus_radius
-            long_dif_gaus = 1/(111.32*abs(math.cos(math.radians(lat)))) * gaus_radius
+            lat_dif_gaus = fm.kmToLat(gaus_radius)
+            long_dif_gaus = fm.kmToLong(gaus_radius,lat_additional_loc)
             
-            mean = [long, lat]
+            mean = [long_additional_loc, lat_additional_loc]
             cov = [[long_dif_gaus,0],
                    [0,lat_dif_gaus]]
             
             x, y = np.random.multivariate_normal(mean, cov, 1).T
-            long = x[0]
-            lat = y[0]
+            long_additional_loc = x[0]
+            lat_additional_loc = y[0]
             
             # Check if location is on land 
             ## If yes: append to the list
             
-            long_list = np.linspace(longitude, long, precision)
-            lat_list = np.linspace(latitude, lat, precision)
+            long_list = np.linspace(longitude, long_additional_loc, precision)
+            lat_list = np.linspace(latitude, lat_additional_loc, precision)
                 
             for i in range(0,(precision-1)):
                 try: 
@@ -125,8 +117,7 @@ class SolNet:
         return data
     
     
-    def dataTransforming(
-        dataList,
+    def dataTransforming(self,
         covariates = ['poa_direct','poa_sky_diffuse','poa_ground_diffuse','solar_elevation', 'temp_air']):
         
         trainList = []
@@ -136,9 +127,9 @@ class SolNet:
               
         TRAINTESTSPLIT = 0.85
         
-        for i in range(len(dataList)):
+        for i in range(len(self.data)):
             
-            source_data = dataList[i][0].astype(np.float32)
+            source_data = self.data[i][0].astype(np.float32)
         
             #Create a TimeSeries object of the target variable
             target_series = TimeSeries.from_series(source_data['P'])
