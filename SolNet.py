@@ -225,6 +225,3 @@ class SolNet:
         my_model = BlockRNNModel.load_from_checkpoint(modelname, best=True)
     
         return my_model
-     
-    def modelEvaluation():
-        return None
