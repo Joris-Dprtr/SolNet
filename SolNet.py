@@ -26,10 +26,10 @@ class SolNet:
         
     def _dataGathering(self, latitude, longitude, peakPower, locations=5, start_date=2005):
         
-        km_radius = 50          #The radius around the actual location to find additional locations
-        gaus_radius = 0.5       #The covariance for gaussian noise in km on the radius
-        precision = 40          #The closeness to trailing the coastline when locations are close to water
-                                    #The higher the number, the closer the location to the coast
+        km_radius = 50 * math.log(locations)         #The radius around the actual location to find additional locations
+        gaus_radius = 0.5                            #The covariance for gaussian noise in km on the radius
+        precision = 40                               #The closeness to trailing the coastline when locations are close to water
+                                                        #The higher the number, the closer the location to the coast
         
         data = []
 
@@ -60,36 +60,38 @@ class SolNet:
 
         # Additional locations
 
+        lat_dif = fm.kmToLat(km_radius) # Can be calculated once because it does not depend on the current location
+        lat_dif_gaus = fm.kmToLat(gaus_radius) # The radius around a point to randomise, but in lattitude instead of km
+
         for i in range(locations - 1):
             
-            print('Gathering data from additional location ' + str(i+1) + '...\n')
+            print(f'Gathering data from additional location {i+1}...\n')
             
             # The distance from the base location, transforming latitude and longitude to kilometers
-            lat_dif = fm.kmToLat(km_radius)
-            lat_additional_loc = latitude + additional_locations['Sine'][i]*lat_dif
+            lat_additional = latitude + additional_locations['Sine'][i]*lat_dif
             
-            # Longitude is based on the actual latitude 
-            long_dif = fm.kmToLong(km_radius, lat_additional_loc)
-            long_additional_loc = longitude + additional_locations['Cosine'][i]*long_dif
+            # Longitude is based on the actual latitude and has to be calculated in the loop
+            long_dif = fm.kmToLong(km_radius, lat_additional)
+            long_additional = longitude + additional_locations['Cosine'][i]*long_dif
             
-            # Gaussian randomisation
-            lat_dif_gaus = fm.kmToLat(gaus_radius)
-            long_dif_gaus = fm.kmToLong(gaus_radius,lat_additional_loc)
+            # Gaussian randomisation longitude (has to be calculated in the loop) 
+            long_dif_gaus = fm.kmToLong(gaus_radius,lat_additional)
             
-            mean = [long_additional_loc, lat_additional_loc]
-            cov = [[long_dif_gaus,0],
-                   [0,lat_dif_gaus]]
+            mean = [long_additional, lat_additional]
+            cov = [[long_dif_gaus,0], [0,lat_dif_gaus]]
             
             x, y = np.random.multivariate_normal(mean, cov, 1).T
-            long_additional_loc = x[0]
-            lat_additional_loc = y[0]
+            long_additional, lat_additional = x[0], y[0]
             
             # Check if location is on land 
             ## If yes: append to the list
+
+            long_arr = longitude + (long_additional - longitude) / precision * np.arange(precision)
+            lat_arr = latitude + (lat_additional - latitude) / precision * np.arange(precision)
             
-            long_list = np.linspace(longitude, long_additional_loc, precision)
-            lat_list = np.linspace(latitude, lat_additional_loc, precision)
-                
+            long_list = long_arr.tolist()
+            lat_list = lat_arr.tolist()
+            
             for i in range(0,(precision-1)):
                 try: 
                     long_new = long_list[-(i+1)]
@@ -131,6 +133,7 @@ class SolNet:
             
             source_data = self.data[i][0].astype(np.float32)
         
+            ## TARGET
             #Create a TimeSeries object of the target variable
             target_series = TimeSeries.from_series(source_data['P'])
         
@@ -140,18 +143,21 @@ class SolNet:
             train = transformer.fit_transform(train)
             test = transformer.transform(test)     
 
-            #Create a TimeSeries object of the target variable
+            ## COVARIATES
+            # Create a TimeSeries object of the covariates
             covariate_series = TimeSeries.from_series(source_data[covariates])
 
+            # Include a cyclic feature
             hour_series = datetime_attribute_timeseries(
                 pd.date_range(start=covariate_series.start_time(), freq=covariate_series.freq_str, periods=len(source_data)),
                 attribute="hour",
                 cyclic=True
                 ).astype(np.float32)
 
+            # Plug the cyclic feature on top of the base covariates
             covariate_series = covariate_series.stack(hour_series)
 
-            # Create training and validation sets of the target variable
+            # Create training and validation sets of the covariates
             cov_train, cov_test = covariate_series.split_after(TRAINTESTSPLIT)
             transformer_2 = Scaler()
             cov_train = transformer_2.fit_transform(cov_train)
