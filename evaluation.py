@@ -83,7 +83,7 @@ class Evaluation:
         x = self.actual
         y= self.forecast
 
-        intervals = fm.interval_calc(y, nr_intervals = intervals)
+        intervals = fm.interval_calc(y, num_intervals = intervals)
 
         interval_df = fm.xGivenyIntervals(x,y,intervals)
         interval_df = interval_df.reindex(index=interval_df.index[::-1])
