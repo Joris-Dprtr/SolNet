@@ -31,10 +31,9 @@ Updates:
 
 ### Short term
 1. Allow user to specify features
-2. Forecast evaluation
+2. Finetuning functionality
 
 ### Long term
-1. Finetuning functions
-2. Additional models
-3. Move away from some 3rd party libraries (f.e. PVLIB)
-4. GUI
+1. Additional models
+2. Move away from some 3rd party libraries (f.e. PVLIB, Darts? (move to PyTorch directly))
+3. GUI
