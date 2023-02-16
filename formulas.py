@@ -2,6 +2,7 @@ import math
 import numpy as np
 import pandas as pd
 
+## Functions used for data gathering
 
 def kmToLat(km):
     lat = 1/110.574 * km
@@ -21,36 +22,39 @@ def circle_pattern(points):
     points_df = points_df[:-1]
     return points_df
 
+## Helper functions used for evaluation
 
 def round_down(n, decimals=0):
     multiplier = 10 ** decimals
-    return math.floor(n * multiplier) / multiplier
+    return np.floor(n * multiplier) / multiplier
 
 
 def round_up(n, decimals=0):
     multiplier = 10 ** decimals
-    return math.ceil(n * multiplier) / multiplier
+    return np.ceil(n * multiplier) / multiplier
 
 
-def interval_calc(x, nr_intervals = 11):
-    maxi = max(x)
-    mini = min(x)
-    interval = (maxi - mini) / nr_intervals
+def interval_calc(x, num_intervals = 11):
+    
+    maxi = np.max(x)
+    mini = np.min(x)
+    
+    interval = (maxi - mini) / num_intervals
 
-    maximum = round_down(maxi + interval, -len(str(int(math.modf(maxi)[1]))))
-    minimum = round_up(mini - interval, -len(str(int(math.modf(mini)[1]))))
+    maximum = round_down(maxi + interval, -len(str(int(np.modf(maxi)[1]))))
+    minimum = round_up(mini - interval, -len(str(int(np.modf(mini)[1]))))
 
     i = 1
     while(maximum < maxi or (maximum - interval) > maxi):
-        maximum = round_down(maxi + interval, -(len(str(int(math.modf(maxi)[1])))-i))
+        maximum = round_down(maxi + interval, -(len(str(int(np.modf(maxi)[1])))-i))
         i += i
 
     i = 1
     while(minimum > mini or (minimum + interval) < mini):
-        minimum = round_up(mini - interval, -(len(str(int(math.modf(mini)[1])))-i))
+        minimum = round_up(mini - interval, -(len(str(int(np.modf(mini)[1])))-i))
         i += i
 
-    intervals = np.linspace(minimum, maximum, nr_intervals)
+    intervals = np.linspace(minimum, maximum, num_intervals)
 
     return intervals
 
@@ -73,6 +77,7 @@ def xGivenyIntervals(x,y, intervals):
 
     return interval_df
 
+## Evaluation metrics
 
 def mse(x,y):
     mse = np.mean(np.square(np.subtract(x,y)))
