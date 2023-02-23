@@ -210,7 +210,7 @@ class SolNet:
             dropout=0.4,
             batch_size=32,
             n_epochs=100,
-            optimizer_kwargs={"lr": 1e-4},
+            optimizer_kwargs={"lr" : 1e-4},
             model_name= modelname,
             random_state=28,
             save_checkpoints=True,
