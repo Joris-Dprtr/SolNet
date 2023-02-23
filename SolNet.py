@@ -171,6 +171,7 @@ class SolNet:
         return trainList, covTrainList, testList, covTestList
     
     def model(
+        self,
         trainList, 
         covTrainList, 
         testList, 
