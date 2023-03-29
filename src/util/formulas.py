@@ -98,6 +98,7 @@ def conditional_bias_1(x,y):
     y_unique = np.unique(y)
     x_conditional = []
     
+    ## TO CHANGE: REPLACE BY KCDE 
     for i in range(len(y_unique)):
         bools = np.equal(y,y_unique[i])
         locations = np.where(bools)
@@ -117,6 +118,7 @@ def resolution(x,y):
     y_unique = np.unique(y)
     x_conditional = []
     
+    ## TO CHANGE: REPLACE BY KCDE 
     for i in range(len(y_unique)):
         bools = np.equal(y,y_unique[i])
         locations = np.where(bools)
@@ -136,6 +138,7 @@ def conditional_bias_2(x,y):
     x_unique = np.unique(x)
     y_conditional = []
     
+    ## TO CHANGE: REPLACE BY KCDE 
     for i in range(len(x_unique)):
         bools = np.equal(x,x_unique[i])
         locations = np.where(bools)
@@ -155,6 +158,7 @@ def discrimination(x,y):
     x_unique = np.unique(x)
     y_conditional = []
     
+    ## TO CHANGE: REPLACE BY KCDE 
     for i in range(len(x_unique)):
         bools = np.equal(x,x_unique[i])
         locations = np.where(bools)

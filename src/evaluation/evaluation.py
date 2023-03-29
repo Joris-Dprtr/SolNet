@@ -1,9 +1,12 @@
 from matplotlib import pyplot as plt
 import seaborn as sns
-import formulas as fm
+from utils import formulas as fm
 import scipy.stats as stat
 import pandas as pd
 import numpy as np
+
+import warnings
+warnings.filterwarnings("ignore")
 
 class Evaluation:
     
@@ -34,7 +37,7 @@ class Evaluation:
                             'Conditional bias 2':conditional_bias_2,
                             'Discrimination':discrimination}
 
-        pd.options.display.float_format = "{:,.2f}".format        
+        pd.options.display.float_format = "{:,.3f}".format        
         
         metrics = pd.DataFrame(dict,index=['Metrics'])
         
@@ -63,10 +66,12 @@ class Evaluation:
         palette = sns.dark_palette("#79C", n_colors=levels, reverse=True, as_cmap=True)
         #palette = sns.color_palette("cividis", as_cmap=True)
         
-        g = sns.jointplot(x=x,y=y,s=0, marginal_kws=dict(bins=20, color="grey", alpha=0.8))
-        g.plot_joint(sns.kdeplot, c="black", alpha=0.3, fill=False, zorder=2, levels=levels, linewidths=0.4)
+        g = sns.jointplot(x=x,y=y,s=0, marginal_kws=dict(bins=levels, color="grey", alpha=0.8),)
+        g.plot_joint(sns.kdeplot, alpha=0.3, fill=False, zorder=2, levels=levels, linewidths=0.4)
         g.plot_joint(sns.scatterplot, s=3, hue = diff, palette = palette, linewidths = 0, alpha = 0.6)
-        sns.lineplot(x=lin,y=liny,linewidth = 0.5, color = 'red')   
+        sns.lineplot(x=lin,y=liny,linewidth = 0.5, color = 'red', zorder=3)   
+        g.ax_joint.set_xlabel('Actuals')
+        g.ax_joint.set_ylabel('Forecast')
 
         plt.xlim(min(lin),max(lin))
         plt.ylim(min(lin),max(lin))
@@ -76,7 +81,7 @@ class Evaluation:
     def plot_conditional(self, intervals = 11, x_label = "x given y", y_label = 'Forecast intervals', size = (10,5)):
         
         sns.set(rc={"figure.figsize": size,"figure.dpi":100, 'savefig.dpi':300})
-        sns.set_context('notebook')
+        #sns.set_context('notebook')
         sns.set_style("ticks")
         from IPython.display import set_matplotlib_formats
         set_matplotlib_formats('retina')
