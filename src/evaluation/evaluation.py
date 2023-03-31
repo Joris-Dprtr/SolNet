@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 import seaborn as sns
-from utils import formulas as fm
+from util import formulas as fm
 import scipy.stats as stat
 import pandas as pd
 import numpy as np
@@ -100,10 +100,8 @@ class Evaluation:
         g = sns.FacetGrid(interval_df, row="y interval", hue="y interval", aspect=15, height=.5, palette=pal)
 
         # Draw the densities in a few steps
-        g.map(sns.kdeplot, x_label,
-            bw_adjust=.5, clip_on=False,
-            fill=True, alpha=1, linewidth=1.5)
-        g.map(sns.kdeplot, x_label, clip_on=False, color="w", lw=2, bw_adjust=.5)
+        g.map(sns.kdeplot, x_label, clip_on=False,fill=True, alpha=1, linewidth=1.5)
+        g.map(sns.kdeplot, x_label, clip_on=False, color="w", lw=2)
 
         # passing color=None to refline() uses the hue mapping
         g.refline(y=0, linewidth=2, linestyle="-", color=None, clip_on=False)
@@ -121,7 +119,7 @@ class Evaluation:
         # Set the subplots to overlap
         g.figure.subplots_adjust(hspace=-.25)
         g.set_titles("")
-        g.fig.suptitle(y_label, x=0, y=0.9, ha='left', size='medium', fontweight='bold')
+        g.fig.suptitle(y_label, x=0, y=0.95, ha='left', size='medium', fontweight='bold')
         g.set(yticks=[], ylabel="")
         g.despine(bottom=True, left=True)
         
