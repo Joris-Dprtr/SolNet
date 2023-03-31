@@ -2,6 +2,8 @@ import math
 import numpy as np
 import pandas as pd
 
+from sklearn.neighbors import KernelDensity
+
 ## Functions used for data gathering
 
 def kmToLat(km):
@@ -77,6 +79,26 @@ def xGivenyIntervals(x,y, intervals):
 
     return interval_df
 
+
+def CKDE(x,y):
+    
+    x_unique = np.unique(x)
+    x_range = np.sort(x_unique)
+    
+    xy = np.vstack([x, y]).T
+    bandwidth = 10
+    kde_xy = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(xy)
+    
+    kde_y_given_x = []
+    for xi in x_range:
+        kde_xi = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(x.reshape(-1, 1))
+        log_dens_xi = kde_xi.score_samples([[xi]])
+        log_dens_xy = kde_xy.score_samples(np.hstack([np.full(len(x), xi).reshape(-1, 1), y.reshape(-1, 1)]))
+        log_dens_y_given_xi = log_dens_xy - log_dens_xi
+        kde_y_given_x.append(np.exp(log_dens_y_given_xi))
+
+    return kde_y_given_x, x_range
+
 ## Evaluation metrics
 
 def mse(x,y):
@@ -108,10 +130,28 @@ def conditional_bias_1(x,y):
         conditional_mean = np.mean(xGiveny)
         x_conditional.append(conditional_mean)
     
-    conditional_bias_1 = np.mean(np.square(np.subtract(y_unique,x_conditional)))
+    mapping_dict = {y_unique[i]: x_conditional[i] for i in range(len(y_unique))}
+    x_mapped = np.vectorize(mapping_dict.__getitem__)(y)
+    
+    conditional_bias_1 = np.mean(np.square(np.subtract(y,x_mapped)))
 
     return conditional_bias_1
 
+
+def conditional_bias_1_kde(x,y, decimals=3):
+    
+    x = np.round(x,decimals)
+    #y = np.round(y,decimals)
+    
+    kde_y_given_x, x_range = CKDE(x,y)
+    
+    y_given_x = np.trapz(y.reshape(-1, 1) * np.array(kde_y_given_x).T, y, axis=0) / np.trapz(np.array(kde_y_given_x).T, y, axis=0)
+    mapping = dict(zip(x_range, y_given_x))
+    y_given_x_mapped = np.vectorize(mapping.get)(x)
+    
+    conditional_bias_1 = np.mean(np.square(np.subtract(x,y_given_x_mapped)))
+
+    return conditional_bias_1
 
 def resolution(x,y):
     
@@ -128,7 +168,10 @@ def resolution(x,y):
         conditional_mean = np.mean(xGiveny)
         x_conditional.append(conditional_mean)
     
-    resolution = np.mean(np.square(np.subtract(x_conditional,np.mean(x))))
+    mapping_dict = {y_unique[i]: x_conditional[i] for i in range(len(y_unique))}
+    x_mapped = np.vectorize(mapping_dict.__getitem__)(y)
+     
+    resolution = np.mean(np.square(np.subtract(x_mapped,np.mean(x))))
 
     return resolution
 
@@ -147,8 +190,11 @@ def conditional_bias_2(x,y):
             yGivenx.append(y[locations[0][i]]) 
         conditional_mean = np.mean(yGivenx)
         y_conditional.append(conditional_mean)
+        
+    mapping_dict = {x_unique[i]: y_conditional[i] for i in range(len(x_unique))}
+    y_mapped = np.vectorize(mapping_dict.__getitem__)(y)
     
-    conditional_bias_2 = np.mean(np.square(np.subtract(x_unique,y_conditional)))
+    conditional_bias_2 = np.mean(np.square(np.subtract(x,y_mapped)))
 
     return conditional_bias_2
 
@@ -167,7 +213,10 @@ def discrimination(x,y):
             yGivenx.append(x[locations[0][i]]) 
         conditional_mean = np.mean(yGivenx)
         y_conditional.append(conditional_mean)
+        
+    mapping_dict = {x_unique[i]: y_conditional[i] for i in range(len(x_unique))}
+    y_mapped = np.vectorize(mapping_dict.__getitem__)(y)    
     
-    discrimination = np.mean(np.square(np.subtract(y_conditional,np.mean(y))))
+    discrimination = np.mean(np.square(np.subtract(y_mapped,np.mean(y))))
 
     return discrimination
