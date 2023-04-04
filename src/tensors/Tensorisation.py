@@ -18,6 +18,7 @@ class Tensorisation():
          self.forecast_period = forecast_period
          self.train_test_split = train_test_split
 
+
     def _moving_window(self, tensor, timesteps, prediction_length):
         length = int((len(tensor)-timesteps) / prediction_length) + 1
         moving_window = torch.zeros(length, timesteps, 1)
@@ -26,6 +27,7 @@ class Tensorisation():
             moving_window[i,:,0] = tensor[i*prediction_length:timesteps+i*prediction_length].flatten()
 
         return moving_window
+
 
     def _scale(self, train, test):
             
@@ -36,6 +38,7 @@ class Tensorisation():
             test = (test - minimum) / (maximum - minimum)
 
             return train, test
+
 
     def tensor_creation(self):
 
