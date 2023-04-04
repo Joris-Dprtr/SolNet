@@ -29,11 +29,14 @@ Updates:
 
 ## Pipeline
 
+### Current
+1. Move from Darts to PyTorch 
+
 ### Short term
 1. Allow user to specify features
 2. Finetuning functionality
 
 ### Long term
 1. Additional models
-2. Move away from some 3rd party libraries (f.e. PVLIB, Darts? (move to PyTorch directly))
+2. Use own API instead of PVLIB for fetching
 3. GUI
