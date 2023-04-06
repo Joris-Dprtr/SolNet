@@ -1,9 +1,11 @@
-from matplotlib import pyplot as plt
-import seaborn as sns
-from util import formulas as fm
-import scipy.stats as stat
 import pandas as pd
 import numpy as np
+import scipy.stats as stat
+
+from util import formulas as fm
+
+from matplotlib import pyplot as plt
+import seaborn as sns
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -11,7 +13,7 @@ warnings.filterwarnings("ignore")
 class Evaluation:
     
     def __init__(self, actual, forecast):
-
+        
         self.actual = actual
         self.forecast = forecast
 
