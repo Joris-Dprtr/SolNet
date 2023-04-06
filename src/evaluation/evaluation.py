@@ -92,7 +92,7 @@ class Evaluation:
 
         intervals = fm.interval_calc(y, num_intervals = intervals)
 
-        interval_df = fm.xGivenyIntervals(x,y,intervals)
+        interval_df = fm.x_given_y_intervals(x,y,intervals)
         interval_df = interval_df.reindex(index=interval_df.index[::-1])
         interval_df[x_label] = interval_df['x given y']
          
