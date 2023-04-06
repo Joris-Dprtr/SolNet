@@ -27,10 +27,12 @@ Updates:
     https://doi.org/10.1016/j.solener.2020.04.019.
     (https://www.sciencedirect.com/science/article/pii/S0038092X20303947)
 
+4. Move from Darts to PyTorch. The complete code is now run in PyTorch directly
+
 ## Pipeline
 
 ### Current
-1. Move from Darts to PyTorch 
+1. Small updates in functionality of the scripts
 
 ### Short term
 1. Allow user to specify features
