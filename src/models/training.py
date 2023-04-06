@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 
 
-class training():
+class Training():
 
     def __init__(
         self,
@@ -89,11 +89,7 @@ class training():
         plt.legend()
         
         return state_dict_list, argmin_test
-
-        
-    def load_best_model(self, state_dict_list, argmin_test):
-        self.model.load_state_dict(state_dict_list[argmin_test])
  
         
-    def save_model(self, name):
-        torch.save(self.model.state_dict(), '../../models/' + str(name))
+    def save_model(model, name):
+        torch.save(model.state_dict(), '../models/' + str(name))

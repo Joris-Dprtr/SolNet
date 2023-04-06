@@ -7,14 +7,14 @@ class Tensorisation():
         data, 
         target, 
         features, 
-        lags, 
-        forecast_period, 
+        lags: int, 
+        forecast_period: int, 
         train_test_split = 0.8):
          
-         self.data = data,
-         self.target = target,
-         self.features = features,
-         self.lags = lags,
+         self.data = data
+         self.target = target
+         self.features = features
+         self.lags = lags
          self.forecast_period = forecast_period
          self.train_test_split = train_test_split
 

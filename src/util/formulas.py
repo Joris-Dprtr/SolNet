@@ -192,7 +192,7 @@ def conditional_bias_2(x,y):
         y_conditional.append(conditional_mean)
         
     mapping_dict = {x_unique[i]: y_conditional[i] for i in range(len(x_unique))}
-    y_mapped = np.vectorize(mapping_dict.__getitem__)(y)
+    y_mapped = np.vectorize(mapping_dict.__getitem__)(x)
     
     conditional_bias_2 = np.mean(np.square(np.subtract(x,y_mapped)))
 
@@ -215,7 +215,7 @@ def discrimination(x,y):
         y_conditional.append(conditional_mean)
         
     mapping_dict = {x_unique[i]: y_conditional[i] for i in range(len(x_unique))}
-    y_mapped = np.vectorize(mapping_dict.__getitem__)(y)    
+    y_mapped = np.vectorize(mapping_dict.__getitem__)(x)    
     
     discrimination = np.mean(np.square(np.subtract(y_mapped,np.mean(y))))
 
