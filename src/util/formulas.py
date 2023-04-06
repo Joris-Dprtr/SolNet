@@ -6,12 +6,12 @@ from sklearn.neighbors import KernelDensity
 
 ## Functions used for data gathering
 
-def kmToLat(km):
+def km_to_lat(km):
     lat = 1/110.574 * km
     return lat
 
 
-def kmToLong(km, lat):
+def km_to_long(km, lat):
     long = 1/(111.32*abs(math.cos(math.radians(lat)))) * km
     return long
 
@@ -60,7 +60,7 @@ def interval_calc(x, num_intervals = 11):
 
     return intervals
 
-def xGivenyIntervals(x,y, intervals):
+def x_given_y_intervals(x,y, intervals):
     interval_df = pd.DataFrame(columns=["x given y","y interval"])
 
     for i in range(len(intervals)-2):
@@ -80,7 +80,7 @@ def xGivenyIntervals(x,y, intervals):
     return interval_df
 
 
-def CKDE(x,y):
+def cKDE(x,y):
     
     x_unique = np.unique(x)
     x_range = np.sort(x_unique)
@@ -143,7 +143,7 @@ def conditional_bias_1_kde(x,y, decimals=3):
     x = np.round(x,decimals)
     #y = np.round(y,decimals)
     
-    kde_y_given_x, x_range = CKDE(x,y)
+    kde_y_given_x, x_range = cKDE(x,y)
     
     y_given_x = np.trapz(y.reshape(-1, 1) * np.array(kde_y_given_x).T, y, axis=0) / np.trapz(np.array(kde_y_given_x).T, y, axis=0)
     mapping = dict(zip(x_range, y_given_x))

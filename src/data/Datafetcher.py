@@ -4,7 +4,7 @@ import numpy as np
 from util import formulas as fm
 from util import pvlib_helpers
 
-class Datafetcher:
+class DataFetcher:
 
     def __init__(
         self,
@@ -21,9 +21,9 @@ class Datafetcher:
         self.gaus_radius = gaus_radius
         self.precision = precision
         
-        self.dataset = self._dataGathering(latitude, longitude, peakPower, locations=locations, start_date=start_date)
+        self.dataset = self._data_gathering(latitude, longitude, peakPower, locations=locations, start_date=start_date)
         
-    def _dataGathering(self, latitude, longitude, peakPower, locations=5, start_date=2005):
+    def _data_gathering(self, latitude, longitude, peakPower, locations=5, start_date=2005):
         
         data = []
 
@@ -54,8 +54,8 @@ class Datafetcher:
 
         # Additional locations
 
-        lat_dif = fm.kmToLat(self.km_radius) # Can be calculated once because it does not depend on the current location
-        lat_dif_gaus = fm.kmToLat(self.gaus_radius) # The radius around a point to randomise, but in lattitude instead of km
+        lat_dif = fm.km_to_lat(self.km_radius) # Can be calculated once because it does not depend on the current location
+        lat_dif_gaus = fm.km_to_lat(self.gaus_radius) # The radius around a point to randomise, but in lattitude instead of km
 
         for i in range(locations - 1):
             
@@ -65,11 +65,11 @@ class Datafetcher:
             lat_additional = latitude + additional_locations['Sine'][i]*lat_dif
             
             # Longitude is based on the actual latitude and has to be calculated in the loop
-            long_dif = fm.kmToLong(self.km_radius, lat_additional)
+            long_dif = fm.km_to_long(self.km_radius, lat_additional)
             long_additional = longitude + additional_locations['Cosine'][i]*long_dif
             
             # Gaussian randomisation longitude (has to be calculated in the loop) 
-            long_dif_gaus = fm.kmToLong(self.gaus_radius,lat_additional)
+            long_dif_gaus = fm.km_to_long(self.gaus_radius,lat_additional)
             
             mean = [long_additional, lat_additional]
             cov = [[long_dif_gaus,0], [0,lat_dif_gaus]]
