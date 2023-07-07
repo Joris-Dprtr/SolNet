@@ -28,6 +28,7 @@ Updates:
     (https://www.sciencedirect.com/science/article/pii/S0038092X20303947)
 
 4. Move from Darts to PyTorch. The complete code is now run in PyTorch directly
+5. Use own API instead of PVLIB for fetching
 
 ## Pipeline
 
@@ -40,5 +41,4 @@ Updates:
 
 ### Long term
 1. Additional models
-2. Use own API instead of PVLIB for fetching
-3. GUI
+2. GUI
