@@ -30,6 +30,9 @@ class Training():
         self.criterion = criterion
         self.optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         self.epochs = epochs
+                
+        days = y_train.shape[0] + y_test.shape[0]
+        self.months = round(days/30.5)
 
     def fit(self):
         
@@ -84,8 +87,8 @@ class Training():
                 
         print('Best Epoch: ' + str(argmin_test))
 
-        plt.plot(avg_train_error,label='train error')
-        plt.plot(avg_test_error, label='test error')
+        plt.plot(avg_train_error,label='train error ' + str(self.months) + ' months')
+        plt.plot(avg_test_error, label='test error ' + str(self.months) + ' months')
         plt.legend()
         
         return state_dict_list, argmin_test
