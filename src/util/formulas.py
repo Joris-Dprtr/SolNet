@@ -101,9 +101,9 @@ def cKDE(x,y):
 
 ## Evaluation metrics
 
-def mse(x,y):
-    mse = np.mean(np.square(np.subtract(x,y)))
-    return mse
+def rmse(x,y):
+    rmse = np.sqrt(np.mean(np.square(np.subtract(x,y))))
+    return rmse
 
 def var(x):
     var = np.sum(np.square(np.subtract(x,np.mean(x)))) / (len(x)-1)
