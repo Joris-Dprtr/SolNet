@@ -41,7 +41,7 @@ class DataFetcher:
             data.append(self.pvgis.get_pvgis_hourly())
 
 
-            if sum(data[-1][0]['temp_air'])==0:
+            if sum(data[0]['T2m'])==0:
                 raise ValueError("Location has no weather data, trying different location" + "...")  
                    
         except ValueError as ve:
@@ -93,7 +93,7 @@ class DataFetcher:
                     lat_new = lat_list[-(i+1)]
                     data.append(self.pvgis.get_pvgis_hourly())
                         
-                    if sum(data[-1][0]['temp_air'])==0:
+                    if sum(data[-1]['T2m'])==0:
                         del(data[-1])
                         raise ValueError("Location has no weather data, trying different location" + "...")  
                     else:
