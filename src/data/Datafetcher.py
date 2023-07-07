@@ -2,7 +2,7 @@ import pickle
 import datetime
 import numpy as np
 from util import formulas as fm
-from util import pvlib_helpers
+from util.pvgis_api import PVgis
 
 class DataFetcher:
 
@@ -11,6 +11,8 @@ class DataFetcher:
         latitude,
         longitude,
         peakPower,
+        tilt,
+        azimuth,
         locations = 5,
         start_date = 2005,
         km_radius = 50,                 #The radius around the actual location to find additional locations
@@ -21,9 +23,11 @@ class DataFetcher:
         self.gaus_radius = gaus_radius
         self.precision = precision
         
-        self.dataset = self._data_gathering(latitude, longitude, peakPower, locations=locations, start_date=start_date)
+        self.pvgis = PVgis(latitude, longitude, start_date, tilt, azimuth, peakPower)
         
-    def _data_gathering(self, latitude, longitude, peakPower, locations=5, start_date=2005):
+        self.dataset = self._data_gathering(latitude, longitude, locations=locations)
+        
+    def _data_gathering(self, latitude, longitude, locations=5):
         
         data = []
 
@@ -34,13 +38,7 @@ class DataFetcher:
         print('Gathering data from base location...')
         
         try:
-            data.append(pvlib_helpers.get_pvgis_hourly(latitude=latitude,
-                                          longitude=longitude, 
-                                          start = start_date,
-                                          pvcalculation = True,
-                                          peakpower=peakPower,
-                                          optimal_surface_tilt=True, 
-                                          optimalangles=True))
+            data.append(self.pvgis.get_pvgis_hourly())
 
 
             if sum(data[-1][0]['temp_air'])==0:
@@ -49,8 +47,11 @@ class DataFetcher:
         except ValueError as ve:
             print(ve) 
     
-        except:
-            print('Location over sea, please provide coordinates on land')
+        except TimeoutError:
+            print('Cannot connect to PVGIS')
+        
+        except Exception as e:
+            print(e)
 
         # Additional locations
 
@@ -90,13 +91,7 @@ class DataFetcher:
                 try: 
                     long_new = long_list[-(i+1)]
                     lat_new = lat_list[-(i+1)]
-                    data.append(pvlib_helpers.get_pvgis_hourly(latitude=lat_new,
-                                                longitude=long_new, 
-                                                start = start_date,
-                                                pvcalculation = True,
-                                                peakpower=peakPower,
-                                                optimal_surface_tilt=True, 
-                                                optimalangles=True))
+                    data.append(self.pvgis.get_pvgis_hourly())
                         
                     if sum(data[-1][0]['temp_air'])==0:
                         del(data[-1])
@@ -118,12 +113,13 @@ class DataFetcher:
         
         return pv_dataset_list
     
-    def save_data(self):
+    def save_data(self, file_name = None):
         
         now = datetime.datetime.now()
         date_string = now.strftime("%y%m%d_%H%M")
-        filename = f"dataset_{date_string}.pkl"
-        with open('../data/' + filename, "wb") as f:
+        if(file_name == None):
+            file_name = f"dataset_{date_string}.pkl"
+        with open('../data/' + file_name, "wb") as f:
             pickle.dump(self.dataset, f)     
         
-        return filename
+        return file_name
