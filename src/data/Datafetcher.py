@@ -24,7 +24,7 @@ class DataFetcher:
         utility (see util).
         :param latitude: latitude of the location of interest
         :param longitude: longitude of the location of interest
-        :param peak_power: the peakPower of the installation
+        :param peak_power: the peak power of the installation
         :param tilt: the tilt of the solar panels
         :param azimuth: the direction of the solar panels
         :param start_date: the start date to gather data (minimum = 2005)

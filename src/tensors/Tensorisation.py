@@ -2,6 +2,13 @@ import torch
 
 
 def _moving_window(tensor, timesteps, prediction_length):
+    """
+    Create a moving window based on the steps that we want to forecast and the length of the forecast period
+    :param tensor: the flat tensor
+    :param timesteps: the N timesteps that we want to move forward before forecasting a new period
+    :param prediction_length: the length of the period to forecast
+    :return: a tensor with dimensions taking the moving window into account
+    """
     length = int((len(tensor) - timesteps) / prediction_length) + 1
     moving_window = torch.zeros(length, timesteps, 1)
 
@@ -12,6 +19,14 @@ def _moving_window(tensor, timesteps, prediction_length):
 
 
 def _scale(train, test, domain_min=None, domain_max=None):
+    """
+    MinMax scaling, fitting and transforming the train set, transforming the test set (with the train set fit)
+    :param train: the train tensor
+    :param test: the test tensor
+    :param domain_min: a domain minimum (if known, otherwise it's based on the train.min())
+    :param domain_max: a domain maximum (if known, otherwise it's based on the train.max())
+    :return: returns the scaled train and test sets
+    """
     minimum = domain_min if domain_min is not None else train.min()
     maximum = domain_max if domain_max is not None else train.max()
 
@@ -23,19 +38,29 @@ def _scale(train, test, domain_min=None, domain_max=None):
     return train, test
 
 
-class Tensorisation():
+class Tensorisation:
 
     def __init__(
             self,
             data,
-            target,
-            features,
+            target: str,
+            features: list,
             lags: int,
             forecast_period: int,
             train_test_split=0.8,
             domain_min=None,
             domain_max=None):
-
+        """
+        create tensors for use in pytorch, based on the data list we get from the datafetcher.py script.
+        :param data: the data (list of dataframes)
+        :param target: the target variable name
+        :param features: A list of feature names
+        :param lags: The number of lags to include (the input length)
+        :param forecast_period: the number of hours to forecast
+        :param train_test_split: the train test split as a float (0.8 means 80% train data and 20% test data)
+        :param domain_min: a domain minimum (if known, otherwise it's based on the train.min())
+        :param domain_max: a domain maximum (if known, otherwise it's based on the train.max())
+        """
         self.data = data
         self.target = target
         self.features = features
@@ -46,7 +71,10 @@ class Tensorisation():
         self.domain_max = domain_max
 
     def tensor_creation(self):
-
+        """
+        The method doing the tensor creation
+        :return: tensors, split in a train and test set, with features (X) and targets (y)
+        """
         prediction_len = len(self.data) - self.lags  # See how much data is used for predictions
 
         # The number of windows we have to predict depends on the length of the forecast window 
@@ -98,8 +126,12 @@ class Tensorisation():
 
         return X_train, X_test, y_train, y_test
 
-    def tensor_creation_with_evaluation(self, evaluation_length):
-
+    def tensor_creation_with_evaluation(self, evaluation_length: int):
+        """
+        A similar method that takes into account a separate evaluation set for the purpose of transfer learning
+        :param evaluation_length: the length of the evaluation set
+        :return: tensors, split in a train, test and evaluation set, with features (X) and targets (y)
+        """
         prediction_len = len(self.data) - self.lags - evaluation_length  # See how much data is used for predictions
 
         # The number of windows we have to predict depends on the length of the forecast window 
