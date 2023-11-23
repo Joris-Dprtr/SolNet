@@ -15,10 +15,19 @@ warnings.filterwarnings("ignore")
 class Evaluation:
 
     def __init__(self, actual, forecast):
+        """
+        Evaluation of the model, based on https://doi.org/10.1016/j.solener.2020.04.019 (see README)
+        :param actual: the actuals of the data
+        :param forecast: the forecasts made by the model
+        """
         self.actual = actual
         self.forecast = forecast
 
     def metrics(self):
+        """
+        Metrics based on https://doi.org/10.1016/j.solener.2020.04.019
+        :return: a dataframe with all the metrics based on our model performance
+        """
         rmse = fm.rmse(self.actual, self.forecast)
         var_actual = fm.var(self.actual)
         var_forecast = fm.var(self.forecast)
@@ -45,6 +54,10 @@ class Evaluation:
         return metrics
 
     def plot_joint(self, levels=20):
+        """
+        A joint plot that visualises the performance of the models
+        :param levels: How many levels to include for the granularity of the kde plot
+        """
         sns.set(rc={"figure.dpi": 100, 'savefig.dpi': 300})
         sns.set_context('notebook')
         sns.set_style("ticks")
@@ -75,6 +88,13 @@ class Evaluation:
         plt.legend(title="Diff. x-y")
 
     def plot_conditional(self, intervals=11, x_label="x given y", y_label='Forecast intervals', size=(10, 5)):
+        """
+        A conditional plot that shows the performance given a certain interval
+        :param intervals: How many intervals to split the data into
+        :param x_label: X axis label
+        :param y_label: Y axis label
+        :param size: size of the plot
+        """
         sns.set(rc={"figure.figsize": size, "figure.dpi": 100, 'savefig.dpi': 300})
         # sns.set_context('notebook')
         sns.set_style("ticks")
