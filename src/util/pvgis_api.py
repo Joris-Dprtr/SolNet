@@ -13,8 +13,16 @@ class PVgis:
                  start,
                  tilt,
                  azimuth,
-                 peakpower):
-
+                 peak_power):
+        """
+        API to access PVGIS data
+        :param latitude: latitude of the location of interest
+        :param longitude: longitude of the location of interest
+        :param start: the start date to gather data (minimum = 2005)
+        :param tilt: the tilt of the solar panels
+        :param azimuth: the direction of the solar panels
+        :param peak_power: the peak power of the installation
+        """
         self.URL = 'https://re.jrc.ec.europa.eu/api/v5_2/seriescalc'
         LOSS = 14
 
@@ -24,11 +32,14 @@ class PVgis:
                        'angle': tilt, 'aspect': azimuth,
                        'pvcalculation': 1,
                        'components': 1,
-                       'peakpower': peakpower,
+                       'peakpower': peak_power,
                        'loss': LOSS}
 
     def get_pvgis_hourly(self):
-
+        """
+        Fetch the data from PVGIS
+        :return: a dataframe holding the hourly PVGIS data
+        """
         data_request = requests.get(self.URL, params=self.params, timeout=120)
 
         if not data_request.ok:
@@ -46,8 +57,6 @@ class PVgis:
             with open(str(filename), 'r') as fbuf:
                 src = json.load(fbuf)
 
-        # inputs = src['inputs']
-        # metadata = src['meta']
         data = pd.DataFrame(src['outputs']['hourly'])
         data.index = pd.to_datetime(data['time'], format='%Y%m%d:%H%M', utc=True)
         data = data.drop('time', axis=1)
