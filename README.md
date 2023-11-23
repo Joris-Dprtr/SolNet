@@ -4,7 +4,10 @@ Open-source tool to get a pre-trained deep learning model for solar forecasting 
 ## Requirements
 
 ### Libraries
-TBD
+1. PyTorch
+2. Sklearn
+3. Numpy
+4. Pandas
 
 ## Done
 
