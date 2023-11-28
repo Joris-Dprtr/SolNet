@@ -32,6 +32,7 @@ Updates:
 
 4. Move from Darts to PyTorch. The complete code is now run in PyTorch directly
 5. Use own API instead of PVLIB for fetching
+6. A notebook reflecting the research done in the SolNet paper is added using AusGrid data: https://www.ausgrid.com.au/Industry/Our-Research/Data-to-share/Solar-home-electricity-data
 
 ## Pipeline
 
