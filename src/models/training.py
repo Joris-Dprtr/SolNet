@@ -4,6 +4,15 @@ from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 
 
+def save_model(model, name):
+    """
+    Saves the state dictionary using torch
+    :param name: name of the file
+    :param model: the model for which we want to save the state dictionary
+    """
+    torch.save(model.state_dict(), '../models/' + str(name))
+
+
 class Training:
 
     def __init__(
@@ -106,11 +115,3 @@ class Training:
         plt.legend()
 
         return state_dict_list, argmin_test
-
-    def save_model(self, model, name):
-        """
-        Saves the state dictionary using torch
-        :param name: name of the file
-        :param model: the model for which we want to save the state dictionary
-        """
-        torch.save(model.state_dict(), '../models/' + str(name))

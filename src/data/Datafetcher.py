@@ -40,8 +40,8 @@ class DataFetcher:
         self.gaus_radius = gaus_radius
         self.precision = precision
 
-        self.pvgis = pvgis.PVgis(latitude, longitude, start_date, tilt, azimuth, peakPower, end=end_date,
-                                 optimalangles=optimal_angles)
+        self.pv = pvgis.PVgis(latitude, longitude, start_date, tilt, azimuth, peakPower, end=end_date,
+                              optimalangles=optimal_angles)
 
         self.dataset = self._data_gathering(latitude, longitude, locations=locations)
 
