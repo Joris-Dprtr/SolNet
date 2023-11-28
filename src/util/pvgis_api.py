@@ -11,10 +11,10 @@ class PVgis:
                  latitude,
                  longitude,
                  start,
-                 end,
                  tilt,
                  azimuth,
                  peak_power,
+                 end=None,
                  optimalangles=0):
         """
         API to access PVGIS data
