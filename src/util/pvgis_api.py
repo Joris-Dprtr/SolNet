@@ -11,9 +11,11 @@ class PVgis:
                  latitude,
                  longitude,
                  start,
+                 end,
                  tilt,
                  azimuth,
-                 peak_power):
+                 peak_power,
+                 optimalangles=0):
         """
         API to access PVGIS data
         :param latitude: latitude of the location of interest
@@ -28,12 +30,15 @@ class PVgis:
 
         self.params = {'lat': latitude, 'lon': longitude,
                        'startyear': start,
+                       'endyear': end,
                        'outputformat': 'json',
                        'angle': tilt, 'aspect': azimuth,
+                       'optimalangles': optimalangles,
                        'pvcalculation': 1,
                        'components': 1,
                        'peakpower': peak_power,
-                       'loss': LOSS}
+                       'loss': LOSS,
+                       'localtime': 0}
 
     def get_pvgis_hourly(self):
         """

@@ -11,14 +11,17 @@ class DataFetcher:
             self,
             latitude,
             longitude,
-            peak_power,
+            peakPower,
             tilt,
             azimuth,
-            start_date=2005,
             locations=5,
+            start_date=2005,
+            end_date=None,
+            optimal_angles=None,
             km_radius=50,  # The radius around the actual location to find additional locations
             gaus_radius=0.5,  # The covariance for gaussian noise in km on the radius
             precision=40):
+
         """
         A class that gathers data from a location (and several neighbouring locations) on PVGIS, using the PVGIS API
         utility (see util).
@@ -37,7 +40,8 @@ class DataFetcher:
         self.gaus_radius = gaus_radius
         self.precision = precision
 
-        self.pv = pvgis.PVgis(latitude, longitude, start_date, tilt, azimuth, peak_power)
+        self.pvgis = pvgis.PVgis(latitude, longitude, start_date, tilt, azimuth, peakPower, end=end_date,
+                                 optimalangles=optimal_angles)
 
         self.dataset = self._data_gathering(latitude, longitude, locations=locations)
 
