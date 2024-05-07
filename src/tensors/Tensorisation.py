@@ -79,8 +79,7 @@ class Tensorisation:
 
         # The number of windows we have to predict depends on the length of the forecast window 
         # (we assume that the forecaster wants to forecast every upcoming period)
-        windows = int(
-            prediction_len / self.forecast_period)  # Get the number of predictions we can make.
+        windows = int(prediction_len / self.forecast_period)  # Get the number of predictions we can make.
 
         train_len = round(windows * self.train_test_split)  # Split the features into a train set...
         test_len = windows - train_len  # ... and a test set
@@ -93,9 +92,10 @@ class Tensorisation:
         # Iterate over all the features to populate the empty tensors
         for i, feature in enumerate(self.features):
             X_tensor = torch.tensor(self.data[feature]).type(torch.float32)
-            flat_train_len = (train_len * self.forecast_period) + self.lags - self.forecast_period
+            flat_train_len = ((train_len - 1) * self.forecast_period) + self.lags
+            flat_test_len = ((test_len - 1) * self.forecast_period) + self.lags
             X_train_feature = X_tensor[:flat_train_len]  # Split the flattened dataframe in a train set...
-            X_test_feature = X_tensor[flat_train_len:-self.forecast_period]  # ... and a test set
+            X_test_feature = X_tensor[-(flat_test_len + self.forecast_period):-self.forecast_period]  # ... and a test set
 
             # Use the scaling method to get everything between 0 and 1     
             train, test = _scale(X_train_feature,
@@ -152,9 +152,10 @@ class Tensorisation:
         for i, feature in enumerate(self.features):
             X_tensor = torch.tensor(self.data[feature][:-evaluation_length]).type(torch.float32)
             X_tensor_eval = torch.tensor(self.data[feature][-evaluation_length:]).type(torch.float32)
-            flat_train_len = (train_len * self.forecast_period) + self.lags - self.forecast_period
+            flat_train_len = ((train_len - 1) * self.forecast_period) + self.lags
+            flat_test_len = ((test_len - 1) * self.forecast_period) + self.lags
             X_train_feature = X_tensor[:flat_train_len]  # Split the flattened dataframe in a train set...
-            X_test_feature = X_tensor[flat_train_len:-self.forecast_period]  # ... and a test set
+            X_test_feature = X_tensor[-(flat_test_len + self.forecast_period):-self.forecast_period]  # ... and a test set
             X_eval_feature = X_tensor_eval[:-self.forecast_period]
 
             # Use the scaling method to get everything between 0 and 1     
