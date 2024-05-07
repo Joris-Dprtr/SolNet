@@ -1,3 +1,4 @@
+import sys
 import pickle
 import datetime
 import numpy as np
@@ -5,7 +6,7 @@ from ..util import formulas as fm
 from ..util import pvgis_api as pvgis
 
 
-class DataFetcher:
+class PvFetcher:
 
     def __init__(
             self,
@@ -69,17 +70,22 @@ class DataFetcher:
 
         except ValueError as ve:
             print(ve)
+            sys.exit(1)
 
         except TimeoutError:
             print('Cannot connect to PVGIS')
+            sys.exit(1)
 
         except Exception as e:
             print(e)
+            sys.exit(1)
 
         # Additional locations
 
         lat_dif = fm.km_to_lat(self.km_radius)
         lat_dif_gaus = fm.km_to_lat(self.gaus_radius)
+
+        # WORK IN PROGRESS: still have to finalise
 
         for i in range(locations - 1):
 
@@ -114,6 +120,9 @@ class DataFetcher:
                 try:
                     long_new = long_list[-(i + 1)]
                     lat_new = lat_list[-(i + 1)]
+
+                    # TO DO: add the extra locations
+
                     data.append(self.pv.get_pvgis_hourly())
 
                     if sum(data[-1]['T2m']) == 0:
