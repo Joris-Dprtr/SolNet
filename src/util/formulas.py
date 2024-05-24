@@ -26,6 +26,33 @@ def circle_pattern(points):
     return points_df
 
 
+def calculate_new_position(lat, lon, distance_km, bearing_degrees):
+    # Convert latitude, longitude, and bearing to radians
+    lat1 = math.radians(lat)
+    lon1 = math.radians(lon)
+    bearing = math.radians(bearing_degrees)
+
+    # Earth's radius in kilometers
+    R = 6371.0
+
+    # Convert distance to radians
+    distance_rad = distance_km / R
+
+    # Calculate the new latitude
+    lat2 = math.asin(math.sin(lat1) * math.cos(distance_rad) +
+                     math.cos(lat1) * math.sin(distance_rad) * math.cos(bearing))
+
+    # Calculate the new longitude
+    lon2 = lon1 + math.atan2(math.sin(bearing) * math.sin(distance_rad) * math.cos(lat1),
+                             math.cos(distance_rad) - math.sin(lat1) * math.sin(lat2))
+
+    # Convert the new latitude and longitude from radians to degrees
+    lat2 = math.degrees(lat2)
+    lon2 = math.degrees(lon2)
+
+    return lat2, lon2
+
+
 # Helper functions used for evaluation
 
 def round_down(n, decimals=0):

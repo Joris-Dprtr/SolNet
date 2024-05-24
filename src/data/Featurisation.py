@@ -1,6 +1,8 @@
 import numpy as np
 import pickle
 
+import pandas as pd
+
 
 def _load_data(file_path):
     """
@@ -28,6 +30,8 @@ class Featurisation:
             raise ValueError("Data cannot be None. Please provide a (list of) pandas dataframe(s) or a file path.")
         elif isinstance(data, list):
             self.data = data
+        elif isinstance(data, pd.DataFrame):
+            self.data = [data]
         elif isinstance(data, str):
             self.data = _load_data(data)
         else:
@@ -53,10 +57,12 @@ class Featurisation:
         """
         for i in range(len(self.data)):
             if daily is True:
-                self.data[i]['hour_sin'] = np.sin(2 * np.pi * self.data[i].index.hour / 24)
-                self.data[i]['hour_cos'] = np.cos(2 * np.pi * self.data[i].index.hour / 24)
-            if yearly is True:
-                self.data[i]['month_sin'] = np.sin(2 * np.pi * self.data[i].index.month / 12)
-                self.data[i]['month_cos'] = np.cos(2 * np.pi * self.data[i].index.month / 12)
+                self.data[i] = self.data[i].copy()
+                self.data[i].loc[:, 'hour_sin'] = np.sin(2 * np.pi * self.data[i].index.hour / 24)
+                self.data[i].loc[:, 'hour_cos'] = np.cos(2 * np.pi * self.data[i].index.hour / 24)
+            if yearly:
+                self.data[i] = self.data[i].copy()
+                self.data[i].loc[:, 'month_sin'] = np.sin(2 * np.pi * self.data[i].index.month / 12)
+                self.data[i].loc[:, 'month_cos'] = np.cos(2 * np.pi * self.data[i].index.month / 12)
 
         return self.data
