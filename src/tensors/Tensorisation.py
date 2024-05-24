@@ -1,21 +1,21 @@
 import torch
+import numpy as np
 
 
-def _moving_window(tensor, timesteps, prediction_length):
+def _moving_window(array, windows, window_size, window_step):
     """
-    Create a moving window based on the steps that we want to forecast and the length of the forecast period
-    :param tensor: the flat tensor
-    :param timesteps: the N timesteps that we want to move forward before forecasting a new period
-    :param prediction_length: the length of the period to forecast
-    :return: a tensor with dimensions taking the moving window into account
+    Create a moving window based on the steps that we want to forecast
+    :param array: the flat array
+    :param window_size: the N timesteps that we want to include in each window
+    :param window_step: the step size
+    :return: an array with dimensions taking the moving window into account
     """
-    length = int((len(tensor) - timesteps) / prediction_length) + 1
-    moving_window = torch.zeros(length, timesteps, 1)
-
-    for i in range(length):
-        moving_window[i, :, 0] = tensor[i * prediction_length:timesteps + i * prediction_length].flatten()
-
-    return moving_window
+    # Create an array of starting indices for each window
+    start_indices = np.arange(0, windows * window_step, window_step)
+    # Fill the array from the start index onwards
+    index_array = start_indices[:, np.newaxis] + np.arange(window_size)
+    # Apply the indexing on the original array
+    return array[index_array]
 
 
 def _scale(train, test, domain_min=None, domain_max=None):
@@ -38,167 +38,227 @@ def _scale(train, test, domain_min=None, domain_max=None):
     return train, test
 
 
-class Tensorisation:
+class Tensors:
 
-    def __init__(
-            self,
-            data,
-            target: str,
-            features: list,
-            lags: int,
-            forecast_period: int,
-            train_test_split=0.8,
-            domain_min=None,
-            domain_max=None):
+    def __init__(self,
+                 data,
+                 target: str,
+                 past_features: list,
+                 future_features: list,
+                 lags: int,
+                 forecast_period: int,
+                 gap: int = 0,
+                 forecast_gap: int = 0,
+                 train_test_split: float = 0.8,
+                 evaluation_length: int = 0,
+                 domain_min=None,
+                 domain_max=None
+                 ):
         """
         create tensors for use in pytorch, based on the data list we get from the datafetcher.py script.
-        :param data: the data (list of dataframes)
+        :param data: the data (Pandas Dataframe)
         :param target: the target variable name
-        :param features: A list of feature names
+        :param past_features: A list of PAST feature names
+        :param future_features: A list of FUTURE feature names
         :param lags: The number of lags to include (the input length)
         :param forecast_period: the number of hours to forecast
+        :param gap: the gap between the lags and the forecast period
+        :param forecast_gap: the gap between each forecast, a moving window which can be negative
         :param train_test_split: the train test split as a float (0.8 means 80% train data and 20% test data)
         :param domain_min: a domain minimum (if known, otherwise it's based on the train.min())
         :param domain_max: a domain maximum (if known, otherwise it's based on the train.max())
         """
+
         self.data = data
         self.target = target
-        self.features = features
+        self.past_features = past_features
+        self.future_features = future_features
         self.lags = lags
         self.forecast_period = forecast_period
+        self.gap = gap
+        self.forecast_gap = forecast_gap
         self.train_test_split = train_test_split
+        self.flat_evaluation_length = evaluation_length
         self.domain_min = domain_min
         self.domain_max = domain_max
 
-    def tensor_creation(self):
+    def create_tensor(self):
         """
         The method doing the tensor creation
         :return: tensors, split in a train and test set, with features (X) and targets (y)
         """
-        prediction_len = len(self.data) - self.lags  # See how much data is used for predictions
 
-        # The number of windows we have to predict depends on the length of the forecast window 
-        # (we assume that the forecaster wants to forecast every upcoming period)
-        windows = int(prediction_len / self.forecast_period)  # Get the number of predictions we can make.
+        # we can't use the first [lags] + [gap] timesteps
+        prediction_length = len(self.data) - self.lags - self.gap - self.flat_evaluation_length
 
-        train_len = round(windows * self.train_test_split)  # Split the features into a train set...
-        test_len = windows - train_len  # ... and a test set
+        # The number of predictions is based on the forecast gap + forecast length
+        divider = self.forecast_gap + self.forecast_period
 
-        X_train = torch.zeros(train_len, self.lags,
-                              len(self.features))  # Create the empty training tensor for the features
-        X_test = torch.zeros(test_len, self.lags,
-                             len(self.features))  # Create the empty testing tensor for the features
+        # Check if the array is of the correct length
+        left_over = prediction_length % divider
+        if left_over != 0:
+            self.data = self.data[left_over:]
+            prediction_length = len(self.data) - self.lags - self.gap - self.flat_evaluation_length
 
-        # Iterate over all the features to populate the empty tensors
-        for i, feature in enumerate(self.features):
-            X_tensor = torch.tensor(self.data[feature]).type(torch.float32)
-            flat_train_len = ((train_len - 1) * self.forecast_period) + self.lags
-            flat_test_len = ((test_len - 1) * self.forecast_period) + self.lags
-            X_train_feature = X_tensor[:flat_train_len]  # Split the flattened dataframe in a train set...
-            X_test_feature = X_tensor[-(flat_test_len + self.forecast_period):-self.forecast_period]  # ... and a test set
+        predictions = (prediction_length - self.forecast_period) // divider + 1
 
-            # Use the scaling method to get everything between 0 and 1     
-            train, test = _scale(X_train_feature,
-                                 X_test_feature,
-                                 domain_min=self.domain_min[i] if isinstance(self.domain_max, list) else None,
-                                 domain_max=self.domain_max[i] if isinstance(self.domain_max, list) else None)
+        train_length = round(predictions * self.train_test_split)
+        test_length = predictions - train_length
+        evaluation_length = max(int((self.flat_evaluation_length - self.lags - self.gap) / divider), 0)
 
-            # Use the moving window to go from the flat tensor to the correct dimensions (window, lags per window)
-            X_train[:, :, i] = _moving_window(train,
-                                              self.lags,
-                                              self.forecast_period).squeeze(-1)
-            X_test[:, :, i] = _moving_window(test,
-                                             self.lags,
-                                             self.forecast_period).squeeze(-1)
+        # Features
+        # Make all the tensors
+        X_train = torch.zeros(train_length, max(self.forecast_period, self.lags),
+                              len(self.past_features) + len(self.future_features))
+        X_test = torch.zeros(test_length, max(self.forecast_period, self.lags),
+                             len(self.past_features) + len(self.future_features))
+        X_eval = torch.zeros(evaluation_length, max(self.forecast_period, self.lags),
+                             len(self.past_features) + len(self.future_features))
 
-            # Make the target vector if the feature is our target
-            if feature == self.target:
-                y_tensor = X_tensor[self.lags:]
-                y_train, y_test = _scale(y_tensor[:train_len * self.forecast_period],
-                                         y_tensor[train_len * self.forecast_period:],
-                                         domain_min=self.domain_min[i] if isinstance(self.domain_max,
-                                                                                     list) else None,
-                                         domain_max=self.domain_max[i] if isinstance(self.domain_max,
-                                                                                     list) else None)
+        # Past features
+        # Get the flat length of the train
+        past_train_start = 0
+        past_train_end = (train_length - 1) * divider + self.lags
+        # and test array
+        past_test_start = past_train_end + self.forecast_gap + self.forecast_period - self.lags
+        past_test_end = -(self.flat_evaluation_length + self.forecast_period + self.gap)
 
-                y_train = y_train.view(train_len, self.forecast_period, 1)
-                y_test = y_test.view(test_len, self.forecast_period, 1)
+        past_eval_start = past_test_end + self.forecast_gap + self.forecast_period - self.lags
+        past_eval_end = -(self.forecast_period + self.forecast_period + self.gap)
 
-        return X_train, X_test, y_train, y_test
+        for i, feature in enumerate(self.past_features):
 
-    def tensor_creation_with_evaluation(self, evaluation_length: int):
-        """
-        A similar method that takes into account a separate evaluation set for the purpose of transfer learning
-        :param evaluation_length: the length of the evaluation set
-        :return: tensors, split in a train, test and evaluation set, with features (X) and targets (y)
-        """
-        prediction_len = len(self.data) - self.lags - evaluation_length  # See how much data is used for predictions
+            past_train_array = np.array(self.data[feature][past_train_start:past_train_end])
+            past_train_array_shaped = _moving_window(past_train_array, X_train.shape[0], self.lags,
+                                                     self.forecast_gap + self.forecast_period)
 
-        # The number of windows we have to predict depends on the length of the forecast window 
-        # (we assume that the forecaster wants to forecast every upcoming period)
-        windows = int(prediction_len / self.forecast_period)  # Get the number of predictions we can make.
+            past_test_array = np.array(self.data[feature][past_test_start:past_test_end])
+            past_test_array_shaped = _moving_window(past_test_array, X_test.shape[0], self.lags,
+                                                    self.forecast_gap + self.forecast_period)
 
-        train_len = round(windows * self.train_test_split)  # Split the features into a train set...
-        test_len = windows - train_len  # ... and a test set
-        evaluation_len = int((evaluation_length - self.lags) / self.forecast_period)
+            if self.flat_evaluation_length != 0:
+                past_eval_array = np.array(self.data[feature][past_eval_start:past_eval_end])
+                past_eval_array_shaped = _moving_window(past_eval_array, X_eval.shape[0], self.lags,
+                                                        self.forecast_gap + self.forecast_period)
 
-        X_train = torch.zeros(train_len, self.lags,
-                              len(self.features))  # Create the empty training tensor for the features
-        X_test = torch.zeros(test_len, self.lags,
-                             len(self.features))  # Create the empty testing tensor for the features
-        X_eval = torch.zeros(evaluation_len, self.lags, len(self.features))
+            if self.lags < self.forecast_period:
+                past_train_padding = np.zeros((past_train_array_shaped.shape[0], self.forecast_period - self.lags))
+                past_train_array_shaped = np.concatenate((past_train_padding, past_train_array_shaped), axis=1)
 
-        # Iterate over all the features to populate the empty tensors
-        for i, feature in enumerate(self.features):
-            X_tensor = torch.tensor(self.data[feature][:-evaluation_length]).type(torch.float32)
-            X_tensor_eval = torch.tensor(self.data[feature][-evaluation_length:]).type(torch.float32)
-            flat_train_len = ((train_len - 1) * self.forecast_period) + self.lags
-            flat_test_len = ((test_len - 1) * self.forecast_period) + self.lags
-            X_train_feature = X_tensor[:flat_train_len]  # Split the flattened dataframe in a train set...
-            X_test_feature = X_tensor[-(flat_test_len + self.forecast_period):-self.forecast_period]  # ... and a test set
-            X_eval_feature = X_tensor_eval[:-self.forecast_period]
+                past_test_padding = np.zeros((past_test_array_shaped.shape[0], self.forecast_period - self.lags))
+                past_test_array_shaped = np.concatenate((past_test_padding, past_test_array_shaped), axis=1)
 
-            # Use the scaling method to get everything between 0 and 1     
-            train, test = _scale(X_train_feature,
-                                 X_test_feature,
-                                 domain_min=self.domain_min[i] if isinstance(self.domain_max, list) else None,
-                                 domain_max=self.domain_max[i] if isinstance(self.domain_max, list) else None)
+                if self.flat_evaluation_length != 0:
+                    past_eval_padding = np.zeros((past_eval_array_shaped.shape[0], self.forecast_period - self.lags))
+                    past_eval_array_shaped = np.concatenate((past_eval_padding, past_eval_array_shaped), axis=1)
 
-            _, eval = _scale(X_train_feature,
-                             X_eval_feature,
-                             domain_min=self.domain_min[i] if isinstance(self.domain_max, list) else None,
-                             domain_max=self.domain_max[i] if isinstance(self.domain_max, list) else None)
+            past_train, past_test = _scale(past_train_array_shaped, past_test_array_shaped,
+                                           domain_min=self.domain_min[i] if isinstance(self.domain_max,
+                                                                                       list) else None,
+                                           domain_max=self.domain_max[i] if isinstance(self.domain_max,
+                                                                                       list) else None)
+            if self.flat_evaluation_length != 0:
+                _, past_eval = _scale(past_train_array_shaped, past_eval_array_shaped,
+                                      domain_min=self.domain_min[i] if isinstance(self.domain_max,
+                                                                                  list) else None,
+                                      domain_max=self.domain_max[i] if isinstance(self.domain_max,
+                                                                                  list) else None)
 
-            # Use the moving window to go from the flat tensor to the correct dimensions (window, lags per window)
-            X_train[:, :, i] = _moving_window(train,
-                                              self.lags,
-                                              self.forecast_period).squeeze(-1)
-            X_test[:, :, i] = _moving_window(test,
-                                             self.lags,
-                                             self.forecast_period).squeeze(-1)
-            X_eval[:, :, i] = _moving_window(eval,
-                                             self.lags,
-                                             self.forecast_period).squeeze(-1)
+            X_train[:, :, i] = torch.tensor(past_train).type(torch.float32)
+            X_test[:, :, i] = torch.tensor(past_test).type(torch.float32)
+            if self.flat_evaluation_length != 0:
+                X_eval[:, :, i] = torch.tensor(past_eval).type(torch.float32)
 
-            # Make the target vector if the feature is our target
-            if feature == self.target:
-                y_tensor = X_tensor[self.lags:]
-                y_tensor_eval = X_tensor_eval[self.lags:]
+        # Future features
+        # Get the flat length of the train
+        future_train_start = self.lags + self.gap
+        future_train_end = future_train_start + (train_length - 1) * divider + self.forecast_period
+        # test array
+        future_test_start = future_train_end + self.forecast_gap
+        future_test_end = None if (self.flat_evaluation_length == 0) else -self.flat_evaluation_length
+        # and evaluation array
+        future_eval_start = None if (self.flat_evaluation_length == 0) else future_test_end + self.forecast_gap
+        future_eval_end = None
 
-                y_train, y_test = _scale(y_tensor[:train_len * self.forecast_period],
-                                         y_tensor[train_len * self.forecast_period:],
-                                         domain_min=self.domain_min[i] if isinstance(self.domain_max,
-                                                                                     list) else None,
-                                         domain_max=self.domain_max[i] if isinstance(self.domain_max,
-                                                                                     list) else None)
+        for i, feature in enumerate(self.future_features):
 
-                _, y_eval = _scale(y_tensor[:train_len * self.forecast_period],
-                                   y_tensor_eval,
-                                   domain_min=self.domain_min[i] if isinstance(self.domain_max, list) else None,
-                                   domain_max=self.domain_max[i] if isinstance(self.domain_max, list) else None)
+            future_train_array = np.array(self.data[feature][future_train_start:future_train_end])
+            future_train_array_shaped = _moving_window(future_train_array, X_train.shape[0], self.forecast_period,
+                                                       self.forecast_gap + self.forecast_period)
 
-                y_train = y_train.view(train_len, self.forecast_period, 1)
-                y_test = y_test.view(test_len, self.forecast_period, 1)
-                y_eval = y_eval.view(evaluation_len, self.forecast_period, 1)
+            future_test_array = np.array(self.data[feature][future_test_start:future_test_end])
+            future_test_array_shaped = _moving_window(future_test_array, X_test.shape[0], self.forecast_period,
+                                                      self.forecast_gap + self.forecast_period)
 
-        return X_train, X_test, y_train, y_test, X_eval, y_eval
+            if self.flat_evaluation_length != 0:
+                future_eval_array = np.array(self.data[feature][future_eval_start:future_eval_end])
+                future_eval_array_shaped = _moving_window(future_eval_array, X_eval.shape[0], self.forecast_period,
+                                                          self.forecast_gap + self.forecast_period)
+
+            if self.lags > self.forecast_period:
+                future_train_padding = np.zeros((future_train_array_shaped.shape[0], self.lags - self.forecast_period))
+                future_train_array_shaped = np.concatenate((future_train_padding, future_train_array_shaped), axis=1)
+
+                future_test_padding = np.zeros((future_test_array_shaped.shape[0], self.lags - self.forecast_period))
+                future_test_array_shaped = np.concatenate((future_test_padding, future_test_array_shaped), axis=1)
+
+                if self.flat_evaluation_length != 0:
+                    future_eval_padding = np.zeros((future_eval_array_shaped.shape[0], self.lags - self.forecast_period))
+                    future_eval_array_shaped = np.concatenate((future_eval_padding, future_eval_array_shaped), axis=1)
+
+            future_train, future_test = _scale(future_train_array_shaped, future_test_array_shaped,
+                                               domain_min=self.domain_min[len(self.past_features)+i] if
+                                               isinstance(self.domain_max, list) else None,
+                                               domain_max=self.domain_max[len(self.past_features)+i] if
+                                               isinstance(self.domain_max, list) else None)
+
+            if self.flat_evaluation_length != 0:
+                _, future_eval = _scale(future_train_array_shaped, future_eval_array_shaped,
+                                        domain_min=self.domain_min[len(self.past_features)+i] if
+                                        isinstance(self.domain_max, list) else None,
+                                        domain_max=self.domain_max[len(self.past_features)+i] if
+                                        isinstance(self.domain_max, list) else None)
+
+            X_train[:, :, len(self.past_features)+i] = torch.tensor(future_train).type(torch.float32)
+            X_test[:, :, len(self.past_features)+i] = torch.tensor(future_test).type(torch.float32)
+
+            if self.flat_evaluation_length != 0:
+                X_eval[:, :, len(self.past_features)+i] = torch.tensor(future_eval).type(torch.float32)
+
+        # Target
+        # train
+        target_train_array = np.array(self.data[self.target][future_train_start:future_train_end])
+        target_train_array_shaped = _moving_window(target_train_array, X_train.shape[0], self.forecast_period,
+                                                   self.forecast_gap + self.forecast_period)
+
+        # test
+        target_test_array = np.array(self.data[self.target][future_test_start:future_test_end])
+        target_test_array_shaped = _moving_window(target_test_array, X_test.shape[0], self.forecast_period,
+                                                  self.forecast_gap + self.forecast_period)
+
+        target_train, target_test = _scale(target_train_array_shaped, target_test_array_shaped,
+                                           domain_min=self.domain_min[0] if
+                                           isinstance(self.domain_max, list) else None,
+                                           domain_max=self.domain_max[0] if
+                                           isinstance(self.domain_max, list) else None)
+
+        y_train = torch.tensor(target_train).type(torch.float32)
+        y_test = torch.tensor(target_test).type(torch.float32)
+
+        if self.flat_evaluation_length != 0:
+            target_eval_array = np.array(self.data[self.target][future_eval_start:])
+            target_eval_array_shaped = _moving_window(target_eval_array, X_eval.shape[0], self.forecast_period,
+                                                      self.forecast_gap + self.forecast_period)
+
+            _, target_eval = _scale(target_train_array_shaped, target_eval_array_shaped,
+                                    domain_min=self.domain_min[0] if
+                                    isinstance(self.domain_max, list) else None,
+                                    domain_max=self.domain_max[0] if
+                                    isinstance(self.domain_max, list) else None)
+
+            y_eval = torch.tensor(target_eval).type(torch.float32)
+
+            return X_train, X_test, X_eval, y_train, y_test, y_eval
+
+        else:
+            return X_train, X_test, y_train, y_test
