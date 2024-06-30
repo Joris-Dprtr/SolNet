@@ -10,6 +10,7 @@ class Open_meteo:
     def __init__(self,
                  latitude,
                  longitude,
+                 variables,
                  start_date,
                  end_date):
 
@@ -23,6 +24,7 @@ class Open_meteo:
                        "diffuse_radiation"],
             "models": "best_match"
             }
+        self.variables = ['date'] + variables
 
     def get_open_meteo_hourly(self):
 
@@ -63,5 +65,6 @@ class Open_meteo:
                        "diffuse_radiation": hourly_diffuse_radiation}
 
         hourly_dataframe = pd.DataFrame(data=hourly_data)
+        hourly_dataframe = hourly_dataframe[self.variables]
 
         return hourly_dataframe
