@@ -33,16 +33,12 @@ Updates:
 4. Move from Darts to PyTorch. The complete code is now run in PyTorch directly
 5. Use own API instead of PVLIB for fetching
 6. A notebook reflecting the research done in the SolNet paper is added using AusGrid data: https://www.ausgrid.com.au/Industry/Our-Research/Data-to-share/Solar-home-electricity-data
+7. Access to weather data to include as features in the models
 
 ## Pipeline
 
-### Current
-1. Small updates in functionality of the scripts
-
 ### Short term
-1. Allow user to specify features
-2. Finetuning functionality
+1. Additional models
 
 ### Long term
-1. Additional models
-2. GUI
+1. GUI
