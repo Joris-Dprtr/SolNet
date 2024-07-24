@@ -29,6 +29,8 @@ class Evaluation:
         :return: a dataframe with all the metrics based on our model performance
         """
         rmse = fm.rmse(self.actual, self.forecast)
+        mbe = fm.mbe(self.actual, self.forecast)
+        mae = fm.mae(self.actual, self.forecast)
         var_actual = fm.var(self.actual)
         var_forecast = fm.var(self.forecast)
         correl = stat.pearsonr(self.actual, self.forecast)[0]
@@ -38,7 +40,10 @@ class Evaluation:
         conditional_bias_2 = fm.conditional_bias_2(self.actual, self.forecast)
         discrimination = fm.discrimination(self.actual, self.forecast)
 
-        error_dict = {'RMSE': rmse, 'Var(x)': var_actual,
+        error_dict = {'RMSE': rmse,
+                      'MBE': mbe,
+                      'MAE': mae,
+                      'Var(x)': var_actual,
                       'Var(y)': var_forecast,
                       'Corr': correl,
                       'Bias': bias,
