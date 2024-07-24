@@ -134,6 +134,16 @@ def rmse(x, y):
     return rmse
 
 
+def mbe(x, y):
+    mbe = np.mean(np.subtract(x, y))
+    return mbe
+
+
+def mae(x, y):
+    mae = np.mean(np.abs(np.subtract(x, y)))
+    return mae
+
+
 def var(x):
     var = np.sum(np.square(np.subtract(x, np.mean(x)))) / (len(x) - 1)
     return var
