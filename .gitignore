@@ -1,3 +1,4 @@
 __pycache__/
 *.ipynb_checkpoint
 .idea/
+/data/weather/dwd_huggingface/

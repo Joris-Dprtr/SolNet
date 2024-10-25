@@ -1,48 +1,96 @@
 # SolNet
 Open-source tool to get a pre-trained deep learning model for solar forecasting purposes.
 
+## Reproducibility package
+- Date: 25-10-2024
+- Author: Joris Depoortere (joris.depoortere@kuleuven.be)
+- Structure: 
+  - data: all the PV and weather data
+  - notebooks: all the notebooks for the reproducibility check
+  - src: all the source scripts
+
+
 ## Requirements
 
+Python 3.11.5
+
 ### Libraries
-1. PyTorch
-2. Sklearn
-3. Numpy
-4. Pandas
+1. PyTorch 2.1.0
+2. Scikit-learn 1.3.1
+3. Numpy 1.24.1
+4. Pandas 2.1.1 
+5. matplotlib 3.8.0 
+6. nbformat 5.9.2 
+7. nbconvert 6.5.4
+8. pickle 0.7.5 
+9. xarray 2024.3.0 
+10. ocf_blosc2 0.0.4
+11. openmeteo_requests 1.2.0 
+12. requests_cache 1.2.0 
+13. retry_requests 2.0.0 
+14. requests 2.28.1
+15. json5 0.9.6
 
-## Done
+## Data
 
-Base model:
-1. User provides latitude and longitude
-2. Source model gets returned
+The data used comes in 3 forms:
+- CSV files for the BE PV production sites
+- Parquet files for AUS and NL
+- zarr folders holding xarray files for the DWD icon data
 
-Updates:
-1. Allow for GPU use
-2. Additional locations close to source location can be added to further increase the amount of data included
-3. Evaluation has been added to SolNet. The evaluation metrics + plots follow the following paper:
+## Reproducibility of figures and tables
 
-    Dazhi Yang, Stefano Alessandrini, Javier Antonanzas, Fernando Antonanzas-Torres, Viorel Badescu, Hans Georg Beyer, Robert Blaga, John Boland, Jamie M. Bright, Carlos F.M. Coimbra, Mathieu David, Âzeddine Frimane, Christian A. Gueymard, Tao Hong, Merlinde J. Kay, Sven Killinger, Jan Kleissl, Philippe Lauret, Elke Lorenz, Dennis van der Meer, Marius Paulescu, Richard Perez, Oscar Perpiñán-Lamigueiro, Ian Marius Peters, Gordon Reikard, David Renné, Yves-Marie Saint-Drenan, Yong Shuai, Ruben Urraca, Hadrien Verbois, Frank Vignola, Cyril Voyant, Jie Zhang,
-    Verification of deterministic solar forecasts,
-    Solar Energy,
-    Volume 210,
-    2020,
-    Pages 20-37,
-    ISSN 0038-092X,
-    https://doi.org/10.1016/j.solener.2020.04.019.
-    (https://www.sciencedirect.com/science/article/pii/S0038092X20303947)
+The code repository has several notebooks which can be run to obtain the figures in our paper.
+The below chapters explain how the notebooks work
 
-4. Move from Darts to PyTorch. The complete code is now run in PyTorch directly
-5. Use own API instead of PVLIB for fetching
-6. A notebook reflecting the research done in the SolNet paper is added using AusGrid data: https://www.ausgrid.com.au/Industry/Our-Research/Data-to-share/Solar-home-electricity-data
+### Base notebooks
 
-## Pipeline
+The base notebooks execute the models and provide error metric tables for a specific system. 
+The BE and AUS notebooks only result in the 'base' analysis without weather variables. The
+NL notebook has several configurations which can be set in the first cell of the notebook:
+- With or without weather data included
+- With a distance mismatch between source and target
+- With a different seasonal periodicity
 
-### Current
-1. Small updates in functionality of the scripts
+The NL notebook specifies how to run these figures in the first cell of the notebook:
+- Figure 3: All false
+- Figure 4: weather_variables = True
+- Table 1: seasonal = True
+- Figure 5.a: distance = True
+- Figure 5.b: distance = True, weather_variables = True
 
-### Short term
-1. Allow user to specify features
-2. Finetuning functionality
+For the BE notebook the user has to just specify 't2_campus' or 'energyville' in the first cell.
+For the AUS and NL notebooks we advice to use the run_multiple_instances notebook as discussed
+in the next section.
 
-### Long term
-1. Additional models
-2. GUI
+### Run multiple instances
+
+An additional notebook has been included to make it easy to loop over the base notebooks.
+For the AUS notebook the user just has to specify 'AUS' and leave the analysis on 'base'. 
+For the NL notebooks the user first has to specify the parameters in the base notebook
+as explained in the previous section, and after that, specify 'NL' in the run_multiple_instances
+notebook, as well as the type of analysis: 'base', 'distance' or 'seasonal'. After setting
+these parameters, this notebook will run the analysis for all the systems in the dataset.
+
+### figures
+
+Once all the results have been obtained, the user can just execute the figures notebook and
+obtain all the figures. The first cell has to be set for 
+1. the location (NL, AUS or BE), and
+2. the error metric (RMSE, MAE or MBE)
+
+For AUS and BE only the figure 3 will be executed correctly, for NL all the code will be 
+executed.
+
+## Computer specs
+
+The computer used to run the code is a HP ZBook Studio G9. It has the following key specs:
+- CPU: Intel I9-12900
+- RAM: 64 GB
+- GPU: Nvidia RTX 3080 Ti Laptop
+
+The runtime can be up to several days. A single location takes c. 20 minutes and a total of 340
+locations were run over several different analysis. I would advise the user to take a sample of
+the AUS dataset instead of the full 300 locations, which will save a lot of time. 
+
+A (good, CUDA compatible) GPU is strongly advised to speed up the process.

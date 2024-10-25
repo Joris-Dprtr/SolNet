@@ -53,7 +53,7 @@ class Training:
         days = y_train.shape[0] + y_test.shape[0]
         self.months = round(days / 30.5)
 
-    def fit(self):
+    def fit(self, verbose=False):
         """
         The training loop itself
         :return: state_dict_list: the state dictionary for each of the epochs, argmin_test: the best epoch
@@ -110,8 +110,9 @@ class Training:
 
         print('Best Epoch: ' + str(argmin_test))
 
-        plt.plot(avg_train_error, label='train error ' + str(self.months) + ' months')
-        plt.plot(avg_test_error, label='test error ' + str(self.months) + ' months')
-        plt.legend()
+        if verbose:
+            plt.plot(avg_train_error, label='train error ' + str(self.months) + ' months')
+            plt.plot(avg_test_error, label='test error ' + str(self.months) + ' months')
+            plt.legend()
 
         return state_dict_list, argmin_test

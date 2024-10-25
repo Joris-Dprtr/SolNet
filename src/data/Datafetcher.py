@@ -176,6 +176,16 @@ class WeatherFetcher:
             weather_vars: list,
             start_date="2005-01-01",
             end_date="2020-12-31"):
+
+        """
+        A class that gathers weather data from open meteo.
+        :param locations: the location for which we require weather data
+        :param weather_vars: the weather variables we are interested in. The available variables can be seen on
+        https://open-meteo.com/en/docs/historical-weather-api
+        :param start_date: the start date of the weather data
+        :param end_date: the end date of the weather data
+        """
+
         self.weather_vars = weather_vars
         self.start_date = start_date
         self.end_date = end_date

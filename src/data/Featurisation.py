@@ -26,6 +26,8 @@ class Featurisation:
         Include features for the training of the models
         :param data: the original dataframe (in list format as provided by datafetcher.py or as a file name)
         """
+
+        # Make sure that the data is in the correct format
         if data is None:
             raise ValueError("Data cannot be None. Please provide a (list of) pandas dataframe(s) or a file path.")
         elif isinstance(data, list):
