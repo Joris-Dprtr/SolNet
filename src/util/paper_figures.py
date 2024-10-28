@@ -96,7 +96,7 @@ def distance_figure(base, target, transfer, metrics, months, distances, quantile
     # Create a color map from red to green
     cmap = cm.get_cmap('RdYlGn_r')
     all_medians = np.concatenate([median_dict[dist].values for dist in distances])
-    norm = mcolors.Normalize(vmin=all_medians.min(), vmax=all_medians.max())
+    norm = mcolors.Normalize(vmin=min(all_medians), vmax=max(all_medians))
 
     # Create a figure with a large size
     fig = plt.figure(figsize=(10, 5), dpi=180, facecolor='none')
@@ -131,6 +131,7 @@ def distance_figure(base, target, transfer, metrics, months, distances, quantile
     ax1.set_facecolor('white')
     ax1.set_xlim(months[0], months[-1])
 
+    distances = [s.lstrip('_') for s in distances]
     legend_names = distances + ['Median Naive']
 
     legend = ax1.legend(lines_for_legend, legend_names, fontsize=16, ncol=2)
