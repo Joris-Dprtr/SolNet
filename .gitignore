@@ -2,3 +2,12 @@ __pycache__/
 *.ipynb_checkpoint
 .idea/
 /data/weather/dwd_huggingface/
+
+# Unavailable without 3rd party permission
+/notebooks/base_notebook_NL.ipynb
+/notebooks/base_notebook_BE.ipynb
+/data/belgium/
+/data/netherlands/
+
+# Unavailable due to upload limits, but these can be fetched from huggingface (see ReadMe)
+/data/weather/dwd_huggingface/*zip
