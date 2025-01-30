@@ -96,10 +96,10 @@ def distance_figure(base, target, transfer, metrics, months, distances, quantile
     # Create a color map from red to green
     cmap = cm.get_cmap('RdYlGn_r')
     all_medians = np.concatenate([median_dict[dist].values for dist in distances])
-    norm = mcolors.Normalize(vmin=min(all_medians), vmax=max(all_medians))
+    norm = mcolors.Normalize(vmin=0.1, vmax=0.15)
 
     # Create a figure with a large size
-    fig = plt.figure(figsize=(10, 5), dpi=180, facecolor='none')
+    fig = plt.figure(figsize=(10, 5), dpi=180, facecolor='white')
 
     fontsize = 16
 
@@ -110,8 +110,8 @@ def distance_figure(base, target, transfer, metrics, months, distances, quantile
 
     for dist in distances:
         color = cmap(norm(median_dict[dist].mean()))
-        line, = ax1.plot(months, median_dict[dist], label=dist, color=color)
-        ax1.fill_between(months, lower_bound_dict[dist], upper_bound_dict[dist], color=color, alpha=0.3)
+        line, = ax1.plot(months, median_dict[dist], label=dist, color=color, linewidth=2)
+        ax1.fill_between(months, lower_bound_dict[dist], upper_bound_dict[dist], color=color, alpha=0.2)
         lines_for_legend.append(line)
 
     # Plot the median Naive RMSE
@@ -130,6 +130,7 @@ def distance_figure(base, target, transfer, metrics, months, distances, quantile
         spine.set_color('black')
     ax1.set_facecolor('white')
     ax1.set_xlim(months[0], months[-1])
+    ax1.set_ylim(0,0.3)
 
     distances = [s.lstrip('_') for s in distances]
     legend_names = distances + ['Median Naive']
