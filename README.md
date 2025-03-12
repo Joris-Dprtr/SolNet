@@ -21,10 +21,10 @@ Open-source tool to get a pre-trained deep learning model for solar forecasting 
 Python 3.11.5
 
 ### Libraries
-1. PyTorch 2.1.0
-2. Scikit-learn 1.3.1
-3. Numpy 1.24.1
-4. Pandas 2.1.1 
+1. pyTorch 2.6.0
+2. scikit-learn 1.3.1
+3. numpy 1.24.1
+4. pandas 2.1.1 
 5. matplotlib 3.8.0 
 6. nbformat 5.9.2 
 7. nbconvert 6.5.4
@@ -37,6 +37,7 @@ Python 3.11.5
 14. requests 2.28.1
 15. json5 0.9.6
 16. zarr 2.17.2
+17. pyarrow 19.0.1
 
 ## Data
 
