@@ -28,7 +28,7 @@ Python 3.11.5
 5. matplotlib 3.8.0 
 6. nbformat 5.9.2 
 7. nbconvert 6.5.4
-8. pickle 0.7.5 
+8. seaborn 0.13.2
 9. xarray 2024.3.0 
 10. ocf_blosc2 0.0.4
 11. openmeteo_requests 1.2.0 
