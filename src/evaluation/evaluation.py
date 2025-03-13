@@ -58,9 +58,10 @@ class Evaluation:
 
         return metrics
 
-    def plot_joint(self, levels=20):
+    def plot_joint(self, levels=20, no_zero=False):
         """
         A joint plot that visualises the performance of the models
+        :param no_zero: focus only on values that are not zero
         :param levels: How many levels to include for the granularity of the kde plot
         """
         sns.set(rc={"figure.dpi": 100, 'savefig.dpi': 300})
@@ -69,8 +70,20 @@ class Evaluation:
 
         x = self.actual
         y = self.forecast
-        xandy = np.append(x, y)
-        lin = np.linspace(min(xandy) - np.average(xandy) * 0.4, max(xandy) + np.average(xandy) * 0.4, 1000)
+
+        if no_zero is True:
+
+            mask = x != 0
+
+            # Apply the mask to both arrays
+            x = x[mask]
+            y = y[mask]
+
+
+        xmin, xmax = np.min(x), np.max(x)
+        ymin, ymax = np.min(y), np.max(y)
+        buffer = 0.4 * (xmin + xmax + ymin + ymax) / 4  # Approximate average
+        lin = np.linspace(xmin - buffer, xmax + buffer, 500)
         liny = lin
 
         diff = np.abs(x - y)
@@ -82,7 +95,7 @@ class Evaluation:
         # palette = sns.color_palette("cividis", as_cmap=True)
 
         g = sns.jointplot(x=x, y=y, s=0, marginal_kws=dict(bins=levels, color="grey", alpha=0.8), )
-        g.plot_joint(sns.kdeplot, alpha=0.3, fill=False, zorder=2, levels=levels, linewidths=0.4)
+        g.plot_joint(sns.kdeplot, alpha=0.3, fill=False, zorder=2, levels=levels, linewidths=0.4, bw_adjust=0.5)
         g.plot_joint(sns.scatterplot, s=3, hue=diff, palette=palette, linewidths=0, alpha=0.6)
         sns.lineplot(x=lin, y=liny, linewidth=0.5, color='red', zorder=3)
         g.ax_joint.set_xlabel('Actuals')

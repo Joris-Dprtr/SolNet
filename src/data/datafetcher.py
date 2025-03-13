@@ -16,7 +16,7 @@ class PvFetcher:
             peakPower,
             tilt,
             azimuth,
-            locations=5,
+            locations=1,
             start_date=2005,
             end_date=2020,
             optimal_angles=None,
